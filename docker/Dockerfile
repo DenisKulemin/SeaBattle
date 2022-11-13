@@ -12,3 +12,4 @@ RUN pip install --upgrade pip && pip install "poetry==$POETRY_VERSION"
 RUN poetry install
 
 COPY . .
+
