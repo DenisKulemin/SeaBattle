@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "sea-battle"
+version = "0.1.0"
+description = ""
+authors = ["DenisKuliomin"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^2.2.2"
+pytest = "^7.2.0"
+locust = "^2.13.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
