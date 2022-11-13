@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  seabattle:
+    build:
+      context: ./../
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./../:/home/seabattle
