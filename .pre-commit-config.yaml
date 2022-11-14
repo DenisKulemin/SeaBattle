@@ -14,8 +14,8 @@ repos:
     hooks:
       - id: pylint
         args:
-          - "--disable=import-error,no-member,no-name-in-module,to-few-public-methods,fixme"
-          - "--good-names:i,j,k,exp,run,_"
+          - "--disable=import-error,no-member,no-name-in-module,too-few-public-methods,fixme"
+          - "--good-names=i,j,k,ex,Run,_,x,y"
           - "--max-line-length=120"
   - repo: meta
     hooks:
