@@ -15,7 +15,7 @@ def main() -> None:
             try:
                 coordinates = ast.literal_eval(input("Type coordinates in format [(x, y), (x, y)]: "))
                 game_board.set_ship_coordinate(coordinates)
-            except (BlockedAreaError, BlockedAreaAroundError, SyntaxError) as exp:
+            except (BlockedAreaError, BlockedAreaAroundError, SyntaxError, TypeError) as exp:
                 print(exp)
         elif (command == "set_ship") and game_starts:
             print("Game is started. Cannot add new ship.")
@@ -27,7 +27,7 @@ def main() -> None:
             try:
                 coordinate = ast.literal_eval(input("Type coordinate for shooting in format (x, y): "))
                 game_board.shoot(coordinate)
-            except (ShotCellEarlierError, SyntaxError) as exp:
+            except (ShotCellEarlierError, SyntaxError, TypeError) as exp:
                 print(exp)
         else:
             print(f"Unknown command: {command}")
