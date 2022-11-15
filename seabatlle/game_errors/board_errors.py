@@ -7,3 +7,7 @@ class BlockedAreaError(Exception):
 
 class BlockedAreaAroundError(Exception):
     """Raised if area around coordinates is not empty."""
+
+
+class ShotCellEarlierError(Exception):
+    """Raised if cell for shooting was already shot earlier."""
