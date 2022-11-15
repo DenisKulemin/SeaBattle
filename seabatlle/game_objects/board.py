@@ -1,7 +1,7 @@
 """Module for creation board game."""
 from typing import Tuple, List
 from seabatlle.helpers.constants import GAME_OBJECTS, AREA_AROUND
-from seabatlle.game_errors.board_errors import BlockedAreaError, BlockedAreaAroundError
+from seabatlle.game_errors.board_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError
 
 
 class GameBoard:
@@ -12,6 +12,7 @@ class GameBoard:
         self.width = width
         self.height = height
         self.board = [list(GAME_OBJECTS.get("empty").get("sign") * self.width).copy() for _ in range(self.height)]
+        self.game_is_over = False
 
     def __repr__(self):
         return "\n".join([" ".join(line[1:-1]) for line in self.board[1:-1]])
@@ -39,6 +40,11 @@ class GameBoard:
         return sum(sum(self.board[x + x_coord][y + y_coord] == empty_place for x_coord, y_coord in AREA_AROUND)
                    for x, y in coordinates) == len(coordinates) * len(AREA_AROUND)
 
+    def _game_is_over(self) -> None:
+        """Method checks if board game has ship signs."""
+        self.game_is_over = \
+            not sum(sum(sign == GAME_OBJECTS.get("ship").get("sign") for sign in line) for line in self.board)
+
     def set_ship_coordinate(self, coordinates: List[Tuple[int, int]]) -> None:
         """
         Method sets ship signs with specified coordinates.
@@ -52,3 +58,18 @@ class GameBoard:
             raise BlockedAreaAroundError(f"Area around coordinates: {coordinates} is not empty")
         for x, y in coordinates:
             self.board[x][y] = GAME_OBJECTS.get("ship").get("sign")
+
+    def shoot(self, coordinate: Tuple[int, int]) -> None:
+        """
+        Method contains logic for shooting and changing marks on battlefield.
+        Args:
+            coordinate: Coordinate for shooting.
+        """
+        x, y = coordinate
+        if self.board[x][y] == GAME_OBJECTS.get("empty").get("sign"):
+            self.board[x][y] = GAME_OBJECTS.get("miss").get("sign")
+        elif self.board[x][y] == GAME_OBJECTS.get("ship").get("sign"):
+            self.board[x][y] = GAME_OBJECTS.get("hit").get("sign")
+        else:
+            ShotCellEarlierError(f"Cell with coordinate {coordinate} was shot already.")
+        self._game_is_over()
