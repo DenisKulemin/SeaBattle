@@ -1,5 +1,8 @@
 """Module for creation board game."""
 from typing import Tuple, List
+
+from seabatlle.game_errors.ship_errors import BaseShipError
+from seabatlle.game_objects.ship import Ship
 from seabatlle.helpers.constants import \
     GAME_OBJECTS, AREA_AROUND, EMPTY_SIGN, MISS_SIGN, SHIP_SIGN, HIT_SIGN, SIGN
 from seabatlle.game_errors.board_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError
@@ -13,6 +16,7 @@ class GameBoard:
         self.width = width
         self.height = height
         self.board = [list(GAME_OBJECTS.get(EMPTY_SIGN).get(SIGN) * self.width).copy() for _ in range(self.height)]
+        self.ships = []
         self.game_is_over = False
 
     def __repr__(self):
@@ -57,8 +61,15 @@ class GameBoard:
             raise BlockedAreaError(f"Area with coordinates: {coordinates} is not empty.")
         if not self._check_empty_area_around(coordinates):
             raise BlockedAreaAroundError(f"Area around coordinates: {coordinates} is not empty")
-        for x, y in coordinates:
-            self.board[x][y] = GAME_OBJECTS.get(SHIP_SIGN).get(SIGN)
+
+        try:
+            ship = Ship(coordinates)
+            self.ships.append(ship)
+            for x, y in coordinates:
+                self.board[x][y] = GAME_OBJECTS.get(SHIP_SIGN).get(SIGN)
+        except BaseShipError as exp:
+            print("Couldn't create a ship.")
+            print(exp)
 
     def shoot(self, coordinate: Tuple[int, int]) -> None:
         """
