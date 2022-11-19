@@ -5,6 +5,10 @@ class BaseBoardError(Exception):
     """Base exception class for board."""
 
 
+class AreaOutsideBoardError(BaseBoardError):
+    """Raised if area with coordinates is outside game board."""
+
+
 class BlockedAreaError(BaseBoardError):
     """Raised if area with coordinates is not empty."""
 

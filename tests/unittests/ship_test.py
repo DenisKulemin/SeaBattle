@@ -1,18 +1,16 @@
-"""Module with unittests for game board."""
+"""Module with unittests for ship object."""
 import pytest
 
 from seabatlle.game_errors.ship_errors import NotParallelShipError, WrongShipSizeError, WrongShipCoordinateError
+from seabatlle.game_objects.cell import Cell
 from seabatlle.game_objects.ship import Ship
-from seabatlle.helpers.constants import GAME_OBJECTS, SHIP_SIGN, SIGN
 
 
 def test_ship_creation():
     """Method tests correct creates Ship object and raise Errors if coordinates are wrong."""
     ship = Ship([(1, 1)])
     # Check if Ship created properly.
-    assert ship.ship_coordinates == [(1, 1)]
-    assert ship.ship_size == 1
-    assert ship.ship == [GAME_OBJECTS.get(SHIP_SIGN).get(SIGN)]
+    assert ship.ship == {(1, 1): Cell(x=1, y=1)}
     # Check if Ship raises NotParallelShipError if it is not vertical | or horizontal - line.
     with pytest.raises(NotParallelShipError):
         Ship([(1, 2), (2, 3)])
