@@ -1,7 +1,7 @@
 """Module with main game cycle."""
 import ast
 
-from seabatlle.game_errors.board_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError
+from seabatlle.game_errors.board_errors import BaseBoardError, ShotCellEarlierError
 from seabatlle.game_objects.board import GameBoard
 
 
@@ -10,12 +10,16 @@ def main() -> None:
     command = input("Type your command (possible commands: set_ship, start_game, shoot, exit): ")
     game_board = GameBoard()
     game_starts = False
+
+    game_board.set_ship_coordinate([(1, 2), (2, 2)])
+    game_board.set_ship_coordinate([(4, 4), (6, 6), (4, 6)])
+
     while command != "exit":
         if (command == "set_ship") and not game_starts:
             try:
                 coordinates = ast.literal_eval(input("Type coordinates in format [(x, y), (x, y)]: "))
                 game_board.set_ship_coordinate(coordinates)
-            except (BlockedAreaError, BlockedAreaAroundError, SyntaxError, TypeError) as exp:
+            except (BaseBoardError, SyntaxError, TypeError) as exp:
                 print(exp)
         elif (command == "set_ship") and game_starts:
             print("Game is started. Cannot add new ship.")

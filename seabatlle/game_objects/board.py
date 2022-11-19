@@ -2,10 +2,11 @@
 from typing import Tuple, List
 
 from seabatlle.game_errors.ship_errors import BaseShipError
+from seabatlle.game_objects.cell import Cell
 from seabatlle.game_objects.ship import Ship
-from seabatlle.helpers.constants import \
-    GAME_OBJECTS, AREA_AROUND, EMPTY_SIGN, MISS_SIGN, SHIP_SIGN, HIT_SIGN, SIGN
-from seabatlle.game_errors.board_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError
+from seabatlle.helpers.constants import SignObjects, AREA_AROUND
+from seabatlle.game_errors.board_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError, \
+    AreaOutsideBoardError
 
 
 class GameBoard:
@@ -15,12 +16,25 @@ class GameBoard:
 
         self.width = width
         self.height = height
-        self.board = [list(GAME_OBJECTS.get(EMPTY_SIGN).get(SIGN) * self.width).copy() for _ in range(self.height)]
+        self.board = {(x, y): Cell(x=x, y=y) for x in range(self.width + 1) for y in range(self.height + 1)}
         self.ships = []
         self.game_is_over = False
 
     def __repr__(self):
-        return "\n".join([" ".join(line[1:-1]) for line in self.board[1:-1]])
+        return "\n".join(
+            [" ".join([self.board.get((x, y)).sign for x in range(1, self.width)]) for y in range(1, self.height)]
+        )
+
+    def _check_cell_coordinates(self, coordinates: List[Tuple[int, int]]) -> bool:
+        """
+        Method checks if cell with coordinate is inside the game board and not on border (lines with index 0 and -1).
+        Args:
+            coordinates: List of coordinates.
+
+        Returns: True if coordinate inside the game board, else False.
+        """
+        return sum((0 < coord[0] < self.width) and (0 < coord[1] < self.height) for coord in coordinates) \
+            == len(coordinates)
 
     def _check_empty_area(self, coordinates: List[Tuple[int, int]]) -> bool:
         """
@@ -30,8 +44,8 @@ class GameBoard:
 
         Returns: True if empty, else False.
         """
-        empty_place = GAME_OBJECTS.get(EMPTY_SIGN).get(SIGN)
-        return sum(self.board[x][y] == empty_place for x, y in coordinates) == len(coordinates)
+        return sum(self.board.get((x, y)).sign == SignObjects.empty_sign.sign for x, y in coordinates) \
+            == len(coordinates)
 
     def _check_empty_area_around(self, coordinates: List[Tuple[int, int]]):
         """
@@ -41,14 +55,13 @@ class GameBoard:
 
         Returns: True if empty, else False.
         """
-        empty_place = GAME_OBJECTS.get(EMPTY_SIGN).get(SIGN)
-        return sum(sum(self.board[x + x_coord][y + y_coord] == empty_place for x_coord, y_coord in AREA_AROUND)
-                   for x, y in coordinates) == len(coordinates) * len(AREA_AROUND)
+        return sum(sum(self.board.get((x + x_, y + y_)).sign == SignObjects.empty_sign.sign for x_, y_ in AREA_AROUND)
+                   for x, y in coordinates
+                   ) == len(coordinates) * len(AREA_AROUND)
 
     def _game_is_over(self) -> None:
         """Method checks if board game has ship signs."""
-        self.game_is_over = \
-            not sum(sum(sign == GAME_OBJECTS.get(SHIP_SIGN).get(SIGN) for sign in line) for line in self.board)
+        self.game_is_over = not sum(sign.sign == SignObjects.ship_sign.sign for sign in self.board.values())
 
     def set_ship_coordinate(self, coordinates: List[Tuple[int, int]]) -> None:
         """
@@ -57,6 +70,9 @@ class GameBoard:
             coordinates: List of coordinates.
         """
 
+        if not self._check_cell_coordinates(coordinates):
+            raise AreaOutsideBoardError(f"Area with coordinates: {coordinates} is outside the game board."
+                                        f"Should be inside x - 1:{self.width - 1}, y - 1:{self.height - 1}")
         if not self._check_empty_area(coordinates):
             raise BlockedAreaError(f"Area with coordinates: {coordinates} is not empty.")
         if not self._check_empty_area_around(coordinates):
@@ -66,7 +82,7 @@ class GameBoard:
             ship = Ship(coordinates)
             self.ships.append(ship)
             for x, y in coordinates:
-                self.board[x][y] = GAME_OBJECTS.get(SHIP_SIGN).get(SIGN)
+                self.board[(x, y)] = Cell(x=x, y=y, sign=SignObjects.ship_sign.sign)
         except BaseShipError as exp:
             print("Couldn't create a ship.")
             print(exp)
@@ -78,10 +94,10 @@ class GameBoard:
             coordinate: Coordinate for shooting.
         """
         x, y = coordinate
-        if self.board[x][y] == GAME_OBJECTS.get(EMPTY_SIGN).get(SIGN):
-            self.board[x][y] = GAME_OBJECTS.get(MISS_SIGN).get(SIGN)
-        elif self.board[x][y] == GAME_OBJECTS.get(SHIP_SIGN).get(SIGN):
-            self.board[x][y] = GAME_OBJECTS.get(HIT_SIGN).get(SIGN)
+        if self.board.get((x, y)).sign == SignObjects.empty_sign.sign:
+            self.board[(x, y)] = Cell(x=x, y=y, sign=SignObjects.miss_sign.sign)
+        elif self.board.get((x, y)).sign == SignObjects.ship_sign.sign:
+            self.board[(x, y)] = Cell(x=x, y=y, sign=SignObjects.hit_sign.sign)
         else:
             raise ShotCellEarlierError(f"Cell with coordinate {coordinate} was shot already.")
         self._game_is_over()
