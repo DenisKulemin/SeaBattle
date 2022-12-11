@@ -68,7 +68,7 @@ class BattleField:
         """Method checks if battlefield has ship signs."""
         self.game_is_over = not sum(sign.sign == SignObjects.ship_sign.sign for sign in self.battlefield.values())
 
-    def set_ship_coordinate(self, coordinates: List[Tuple[int, int]]) -> None:
+    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:
         """
         Method sets ship signs with specified coordinates.
         Args:
