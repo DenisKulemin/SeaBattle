@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from seabatlle.game_errors.ship_errors import NotParallelShipError, WrongShipSizeError, WrongShipCoordinateError
-from seabatlle.game_objects.cell import Cell
+from seabattle.game_errors.ship_errors import NotParallelShipError, WrongShipSizeError, WrongShipCoordinateError
+from seabattle.game_objects.cell import Cell
 
 
 @dataclass

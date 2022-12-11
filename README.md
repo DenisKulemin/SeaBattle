@@ -1,6 +1,78 @@
 # SeaBattle
 
-## Code style checker
+## Contest
+- [1. Running application locally](#1-running-application-locally)
+- [2. Running tests](#2-running-tests)
+- [3. Code style checker](#3-code-style-checker)
+
+## 1. Running application locally
+
+1) Build docker container:
+
+```commandline
+cd docker
+docker compose -f compose.yaml build
+```
+
+2) Run docker container:
+
+```commandline
+docker compose -f compose.yaml run --rm seabattle bash
+```
+
+3) Run game:
+
+```commandline
+python seabattle/game.py
+```
+
+## 2. Running tests
+
+1) Run all tests:
+
+```commandline
+poetry run pytest
+```
+
+2) Run specific tests:
+
+- specific folder with tests:
+
+    ```commandline
+    poerty run pytest <path to folder>
+    ```
+
+    Example:
+
+    ```commandline
+    poetry run pytest ./tests/utit_tests
+    ```
+
+- specific file with tests:
+
+    ```commandline
+    poetry run pytest <path to file>
+    ```
+
+    Example:
+
+    ```commandline
+    poetry run pytest ./tests/utit_tests/cell_test.py
+    ```
+
+- specific test:
+
+    ```commandline
+    poetry run pytest <path to file without extension>::<test function name>
+    ```
+
+    Example:
+
+    ```commandline
+    poetry run pytest ./tests/utit_tests/cell_test::test_cell_creation
+    ```
+
+## 3. Code style checker
 
 Using code style based on the
 [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)

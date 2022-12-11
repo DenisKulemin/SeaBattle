@@ -1,7 +1,7 @@
 """"Module for creation cell objects."""
 from dataclasses import dataclass
 
-from seabatlle.helpers.constants import SignObjects
+from seabattle.helpers.constants import SignObjects
 
 
 @dataclass
