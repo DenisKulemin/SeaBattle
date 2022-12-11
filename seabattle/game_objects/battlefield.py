@@ -80,10 +80,8 @@ class BattleField:
             raise BlockedAreaAroundError(f"Area around coordinates: {coordinates} is not empty")
 
         try:
-            ship = Ship(coordinates)
+            ship = Ship({coordinate: self.battlefield.get(coordinate) for coordinate in coordinates})
             self.ships.append(ship)
-            for x, y in coordinates:
-                self.battlefield[(x, y)] = Cell(x=x, y=y, sign=SignObjects.ship_sign.sign)
         except BaseShipError as exp:
             print("Couldn't create a ship.")
             print(exp)

@@ -17,10 +17,10 @@ BOARD_GAME.set_ship_coordinate([(9, 6), (9, 7), (9, 8)])
 @patch("seabattle.game_objects.battlefield.Ship")
 def test_set_ship_coordinate(mock_simple_value):
     """Method tests correct work of set_ship_coordinate method."""
-    # Mock correct Ship object, to avoid Ship specific errors.
-    mock_simple_value.return_value = Ship([(0, 0)])
     board_game = BattleField()
-    board_game.set_ship_coordinate([(1, 2), (2, 2)])
+    # Mock correct Ship object, to avoid Ship specific errors. This mock also create ship in board_game.
+    mock_simple_value.return_value = Ship({(1, 1): board_game.battlefield.get((1, 1)),
+                                           (1, 2): board_game.battlefield.get((1, 2))})
     # Check if battlefield is not empty.
     assert board_game != BattleField()
     # Check if method raises AreaOutsideBoardError if used coordinates is outside the battlefield.
@@ -50,4 +50,3 @@ def test_shoot():
     # Check if method raises ShotCellEarlierError if cell was shot earlier.
     with pytest.raises(ShotCellEarlierError):
         board_game.shoot((1, 2))
-        board_game.shoot((3, 3))
