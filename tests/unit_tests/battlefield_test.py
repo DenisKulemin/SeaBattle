@@ -15,12 +15,16 @@ BOARD_GAME.set_ship_coordinate([(9, 6), (9, 7), (9, 8)])
 
 
 @patch("seabattle.game_objects.battlefield.Ship")
-def test_set_ship_coordinate(mock_simple_value):
-    """Method tests correct work of set_ship_coordinate method."""
+def test_set_ship_coordinate(mock_ship):
+    """
+    Method tests correct work of set_ship_coordinate method.
+    Args:
+        mock_ship: Mock object for Ship.
+    """
     board_game = BattleField()
     # Mock correct Ship object, to avoid Ship specific errors. This mock also create ship in board_game.
-    mock_simple_value.return_value = Ship({(1, 1): board_game.battlefield.get((1, 1)),
-                                           (1, 2): board_game.battlefield.get((1, 2))})
+    mock_ship.return_value = Ship({(1, 1): board_game.battlefield.get((1, 1)),
+                                   (1, 2): board_game.battlefield.get((1, 2))})
     # Check if battlefield is not empty.
     assert board_game != BattleField()
     # Check if method raises AreaOutsideBoardError if used coordinates is outside the battlefield.
@@ -37,10 +41,17 @@ def test_set_ship_coordinate(mock_simple_value):
         board_game.set_ship_coordinate((3, 3))
 
 
-def test_shoot():
-    """Method tests correct work of shoot method."""
+@patch("seabattle.game_objects.battlefield.Ship")
+def test_shoot(mock_ship):
+    """
+    Method tests correct work of shoot method.
+    Args:
+        mock_ship: Mock object for Ship
+    """
     board_game = BattleField()
-    board_game.set_ship_coordinate([(1, 2), (2, 2)])
+    # Mock correct Ship object, to avoid Ship specific errors. This mock also create ship in board_game.
+    mock_ship.return_value = Ship({(1, 1): board_game.battlefield.get((1, 1)),
+                                   (1, 2): board_game.battlefield.get((1, 2))})
     # Check if sign after successful shooting is correct.
     board_game.shoot((1, 2))
     assert board_game.battlefield.get((1, 2)).sign == SignObjects.hit_sign.sign
@@ -50,3 +61,80 @@ def test_shoot():
     # Check if method raises ShotCellEarlierError if cell was shot earlier.
     with pytest.raises(ShotCellEarlierError):
         board_game.shoot((1, 2))
+
+
+def test_player_battlefield_repr():
+    """Method checks if player battlefield printing in console works correct."""
+    board_game = BattleField()
+    # Check empty battlefield.
+    assert repr(board_game) == \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   "  # Line has 19 signs: 10 - cells signs and 9 - whitespaces between them.
+
+    # Check battlefield with ship mark.
+    board_game.battlefield.get((1, 2)).sign = SignObjects.ship_sign.sign
+    assert repr(board_game) == \
+           "                   \n" \
+           "0                  \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   "
+
+    # Check battlefield with miss mark.
+    board_game.battlefield.get((5, 5)).sign = SignObjects.miss_sign.sign
+    assert repr(board_game) == \
+           "                   \n" \
+           "0                  \n" \
+           "                   \n" \
+           "                   \n" \
+           "        *          \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   "
+
+    # Check battlefield with hit mark.
+    board_game.battlefield.get((1, 2)).sign = SignObjects.hit_sign.sign
+    assert repr(board_game) == \
+           "                   \n" \
+           "X                  \n" \
+           "                   \n" \
+           "                   \n" \
+           "        *          \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   "
+
+
+def test_enemy_battlefield_repr():
+    """Method checks if enemy battlefield printing in console works correct."""
+    board_game = BattleField(is_visible=False)
+    # Check battlefield with ship mark. Player shouldn't see enemy's ships.
+    board_game.battlefield.get((1, 2)).sign = SignObjects.ship_sign.sign
+    assert repr(board_game) == \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   \n" \
+           "                   "

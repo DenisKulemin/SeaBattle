@@ -12,18 +12,22 @@ from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAr
 class BattleField:
     """Class contains battlefield object and its methods."""
 
-    def __init__(self, width: int = 12, height: int = 12):
+    def __init__(self, width: int = 11, height: int = 11, is_visible: bool = True):
 
         self.width = width
         self.height = height
         self.battlefield = {(x, y): Cell(x=x, y=y) for x in range(self.width + 1) for y in range(self.height + 1)}
         self.ships = []
         self.game_is_over = False
+        self.is_visible = is_visible
 
     def __repr__(self):
-        return "\n".join(
+        representation = "\n".join(
             [" ".join([self.battlefield.get((x, y)).sign for x in range(1, self.width)]) for y in range(1, self.height)]
         )
+        if not self.is_visible:
+            return representation.replace(SignObjects.ship_sign.sign, SignObjects.empty_sign.sign)
+        return representation
 
     def _check_cell_coordinates(self, coordinates: List[Tuple[int, int]]) -> bool:
         """
