@@ -1,6 +1,6 @@
-"""Module with unittests for cell object."""
-from seabatlle.game_objects.cell import Cell
-from seabatlle.helpers.constants import SignObjects
+"""Module with unit tests for cell object."""
+from seabattle.game_objects.cell import Cell
+from seabattle.helpers.constants import SignObjects
 
 
 def test_cell_creation():

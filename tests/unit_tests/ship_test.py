@@ -1,9 +1,9 @@
-"""Module with unittests for ship object."""
+"""Module with unit tests for ship object."""
 import pytest
 
-from seabatlle.game_errors.ship_errors import NotParallelShipError, WrongShipSizeError, WrongShipCoordinateError
-from seabatlle.game_objects.cell import Cell
-from seabatlle.game_objects.ship import Ship
+from seabattle.game_errors.ship_errors import NotParallelShipError, WrongShipSizeError, WrongShipCoordinateError
+from seabattle.game_objects.cell import Cell
+from seabattle.game_objects.ship import Ship
 
 
 def test_ship_creation():
