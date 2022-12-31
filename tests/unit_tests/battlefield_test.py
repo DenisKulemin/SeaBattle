@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError, \
-    AreaOutsideBattleFieldError
+    AreaOutsideBattleFieldError, CellNotExistError
 from seabattle.game_objects.battlefield import BattleField
 from seabattle.game_objects.ship import Ship
 from seabattle.helpers.constants import SignObjects
@@ -61,6 +61,9 @@ def test_shoot(mock_ship):
     # Check if method raises ShotCellEarlierError if cell was shot earlier.
     with pytest.raises(ShotCellEarlierError):
         board_game.shoot((1, 2))
+    # Check if method raises CellNotExistError if cell with coordinates is not exist.
+    with pytest.raises(CellNotExistError):
+        board_game.shoot((50, 50))
 
 
 def test_player_battlefield_repr():
