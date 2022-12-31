@@ -1,18 +1,22 @@
 """Module with integration tests for the whole game."""
-from seabattle.game import Game
 
 
-def test_game():
-    """Method checks if game works correctly, and doesn't raise any errors."""
-    game = Game()
-    # Set ship.
-    game.player_set_ship([(1, 2), (2, 2)])
-    # Start game.
-    game.start_game()
-
+def test_game_is_not_started(game):
+    """
+    Method checks if game is not finished right after start.
+    Args:
+        game: Game object with one ship.
+    """
     # Check if game is not over right after start.
     assert not game.player.is_game_over
 
+
+def test_game_is_over(game):
+    """
+    Method checks if game works correctly, and doesn't raise any errors during game.
+    Args:
+        game: Game object with one ship.
+    """
     game.player_shoot((5, 5))
     game.player_shoot((2, 7))
     game.player_shoot((2, 2))
