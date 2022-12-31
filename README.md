@@ -31,7 +31,7 @@ python seabattle/game.py
 1) Run all tests:
 
 ```commandline
-poetry run pytest
+pytest
 ```
 
 2) Run specific tests:
@@ -45,31 +45,31 @@ poetry run pytest
     Example:
 
     ```commandline
-    poetry run pytest ./tests/utit_tests
+    pytest ./tests/utit_tests
     ```
 
 - specific file with tests:
 
     ```commandline
-    poetry run pytest <path to file>
+    pytest <path to file>
     ```
 
     Example:
 
     ```commandline
-    poetry run pytest ./tests/utit_tests/cell_test.py
+    pytest ./tests/utit_tests/cell_test.py
     ```
 
 - specific test:
 
     ```commandline
-    poetry run pytest <path to file without extension>::<test function name>
+    pytest <path to file without extension>::<test function name>
     ```
 
     Example:
 
     ```commandline
-    poetry run pytest ./tests/utit_tests/cell_test::test_cell_creation
+    pytest ./tests/utit_tests/cell_test::test_cell_creation
     ```
 
 ## 3. Code style checker

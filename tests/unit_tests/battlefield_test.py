@@ -8,7 +8,7 @@ from seabattle.game_objects.battlefield import BattleField
 from seabattle.game_objects.ship import Ship
 from seabattle.helpers.constants import SignObjects
 
-BOARD_GAME = BattleField()
+BOARD_GAME = BattleField(name="Mike")
 BOARD_GAME.set_ship_coordinates([(1, 2), (2, 2)])
 BOARD_GAME.set_ship_coordinates([(6, 6)])
 BOARD_GAME.set_ship_coordinates([(9, 6), (9, 7), (9, 8)])
@@ -21,12 +21,12 @@ def test_set_ship_coordinate(mock_ship):
     Args:
         mock_ship: Mock object for Ship.
     """
-    board_game = BattleField()
+    board_game = BattleField(name="Mike")
     # Mock correct Ship object, to avoid Ship specific errors. This mock also create ship in board_game.
     mock_ship.return_value = Ship({(1, 1): board_game.battlefield.get((1, 1)),
                                    (1, 2): board_game.battlefield.get((1, 2))})
     # Check if battlefield is not empty.
-    assert board_game != BattleField()
+    assert board_game != BattleField(name="Mike")
     # Check if method raises AreaOutsideBoardError if used coordinates is outside the battlefield.
     with pytest.raises(AreaOutsideBattleFieldError):
         board_game.set_ship_coordinates([(50, -1)])
@@ -48,7 +48,7 @@ def test_shoot(mock_ship):
     Args:
         mock_ship: Mock object for Ship
     """
-    board_game = BattleField()
+    board_game = BattleField(name="Mike")
     # Mock correct Ship object, to avoid Ship specific errors. This mock also create ship in board_game.
     mock_ship.return_value = Ship({(1, 1): board_game.battlefield.get((1, 1)),
                                    (1, 2): board_game.battlefield.get((1, 2))})
@@ -65,7 +65,10 @@ def test_shoot(mock_ship):
 
 def test_player_battlefield_repr():
     """Method checks if player battlefield printing in console works correct."""
-    board_game = BattleField()
+
+    # pylint: disable=duplicate-code
+
+    board_game = BattleField(name="Mike")
     # Check empty battlefield.
     assert repr(board_game) == \
            "                   \n" \
@@ -124,7 +127,10 @@ def test_player_battlefield_repr():
 
 def test_enemy_battlefield_repr():
     """Method checks if enemy battlefield printing in console works correct."""
-    board_game = BattleField(is_visible=False)
+
+    # pylint: disable=duplicate-code
+
+    board_game = BattleField(name="Sailor", is_visible=False)
     # Check battlefield with ship mark. Player shouldn't see enemy's ships.
     board_game.battlefield.get((1, 2)).sign = SignObjects.ship_sign.sign
     assert repr(board_game) == \

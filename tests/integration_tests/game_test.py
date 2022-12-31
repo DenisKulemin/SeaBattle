@@ -11,7 +11,7 @@ def test_game():
     game.start_game()
 
     # Check if game is not over right after start.
-    assert not game.battlefield_area.game_is_over
+    assert not game.player.is_game_over
 
     game.player_shoot((5, 5))
     game.player_shoot((2, 7))
@@ -20,4 +20,4 @@ def test_game():
     game.player_shoot((1, 2))
 
     # Check if game is over after all ships destroyed.
-    assert game.battlefield_area.game_is_over
+    assert game.player.is_game_over
