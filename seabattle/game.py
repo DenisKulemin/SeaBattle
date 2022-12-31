@@ -2,7 +2,7 @@
 import ast
 
 from seabattle.game_errors.battlefield_errors import BaseBattleFieldError, ShotCellEarlierError
-from seabattle.game_objects.battlefield import BattleField
+from seabattle.game_objects.player import Player
 
 
 class Game:
@@ -10,7 +10,7 @@ class Game:
     # TODO Replace prints with errors after adding api error handlers.
 
     def __init__(self):
-        self.battlefield_area = BattleField()
+        self.player = Player(player_name="Mike", enemy_name="Sailor")
         self.game_starts = False
 
     @staticmethod
@@ -31,7 +31,7 @@ class Game:
             coordinate: Tuple with coordinate for shooting.
         """
         if self.game_starts:
-            self.battlefield_area.shoot(coordinate)
+            self.player.shoot(coordinate)
         else:
             print("Game is not started. Cannot shooting.")
 
@@ -42,14 +42,14 @@ class Game:
             coordinates: List of ship's cells coordinates.
         """
         if not self.game_starts:
-            self.battlefield_area.set_ship_coordinates(coordinates)
+            self.player.set_ship_coordinates(coordinates)
         else:
             print("Game is started. Cannot add new ship.")
 
     def start_game(self):
         """Method starts a game after player's command if there is any ships."""
         # TODO Update method after adding constraints for ships quantity.
-        if self.battlefield_area.ships:
+        if self.player.player_battlefield.ships:
             self.game_starts = True
         else:
             print("There is no ships for a game. Cannot start a game.")
@@ -58,6 +58,9 @@ class Game:
         """Main game loop for the interactive game through the terminal."""
         self.player_set_ship([(1, 2), (2, 2)])
         self.player_set_ship([(4, 4), (6, 6), (4, 6)])
+        # TODO Delete adding ships to enemy, when bots will be created.
+        self.player.enemy_battlefield.set_ship_coordinates([(1, 2), (2, 2)])
+        self.player.enemy_battlefield.set_ship_coordinates([(4, 4), (6, 6), (4, 6)])
         command = self.get_command("Type your command (possible commands: set_ship, start_game, shoot, exit): ")
         while command != "exit":
             if (command == "set_ship") and not self.game_starts:
@@ -80,8 +83,8 @@ class Game:
                     print(exp)
             else:
                 print(f"Unknown command: {command}")
-            print(self.battlefield_area)
-            if not self.battlefield_area.game_is_over:
+            print(self.player)
+            if not self.player.is_game_over:
                 command = self.get_command("Type your command (possible commands: set_ship, start_game, shoot, exit): ")
             else:
                 command = "exit"

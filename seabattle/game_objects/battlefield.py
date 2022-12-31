@@ -12,20 +12,21 @@ from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAr
 class BattleField:
     """Class contains battlefield object and its methods."""
 
-    def __init__(self, width: int = 11, height: int = 11, is_visible: bool = True):
+    def __init__(self, name: str, width: int = 11, height: int = 11, is_visible: bool = True):
 
+        self.name = name
         self.width = width
         self.height = height
         self.battlefield = {(x, y): Cell(x=x, y=y) for x in range(self.width + 1) for y in range(self.height + 1)}
         self.ships = []
-        self.game_is_over = False
-        self.is_visible = is_visible
+        self.is_game_over = False
+        self.__is_visible = is_visible
 
     def __repr__(self):
         representation = "\n".join(
             [" ".join([self.battlefield.get((x, y)).sign for x in range(1, self.width)]) for y in range(1, self.height)]
         )
-        if not self.is_visible:
+        if not self.__is_visible:
             return representation.replace(SignObjects.ship_sign.sign, SignObjects.empty_sign.sign)
         return representation
 
@@ -66,7 +67,7 @@ class BattleField:
 
     def _game_is_over(self) -> None:
         """Method checks if battlefield has ship signs."""
-        self.game_is_over = not sum(sign.sign == SignObjects.ship_sign.sign for sign in self.battlefield.values())
+        self.is_game_over = not sum(sign.sign == SignObjects.ship_sign.sign for sign in self.battlefield.values())
 
     def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:
         """
