@@ -19,3 +19,7 @@ class BlockedAreaAroundError(BaseBattleFieldError):
 
 class ShotCellEarlierError(BaseBattleFieldError):
     """Raised if cell for shooting was already shot earlier."""
+
+
+class CellNotExistError(BaseBattleFieldError):
+    """Raised if cell with specified coordinates is not exist."""

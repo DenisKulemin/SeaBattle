@@ -6,7 +6,7 @@ from seabattle.game_objects.cell import Cell
 from seabattle.game_objects.ship import Ship
 from seabattle.helpers.constants import SignObjects, AREA_AROUND
 from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError, \
-    AreaOutsideBattleFieldError
+    AreaOutsideBattleFieldError, CellNotExistError
 
 
 class BattleField:
@@ -18,7 +18,7 @@ class BattleField:
         self.width = width
         self.height = height
         self.battlefield = {(x, y): Cell(x=x, y=y) for x in range(self.width + 1) for y in range(self.height + 1)}
-        self.ships = []
+        self.ships: list = []
         self.is_game_over = False
         self.__is_visible = is_visible
 
@@ -49,7 +49,7 @@ class BattleField:
 
         Returns: True if empty, else False.
         """
-        return sum(self.battlefield.get((x, y)).sign == SignObjects.empty_sign.sign for x, y in coordinates) \
+        return sum(self.battlefield[(x, y)].sign == SignObjects.empty_sign.sign for x, y in coordinates) \
             == len(coordinates)
 
     def _check_empty_area_around(self, coordinates: List[Tuple[int, int]]):
@@ -60,7 +60,7 @@ class BattleField:
 
         Returns: True if empty, else False.
         """
-        return sum(sum(self.battlefield.get((x + x_, y + y_)).sign == SignObjects.empty_sign.sign
+        return sum(sum(self.battlefield[(x + x_, y + y_)].sign == SignObjects.empty_sign.sign
                        for x_, y_ in AREA_AROUND)
                    for x, y in coordinates
                    ) == len(coordinates) * len(AREA_AROUND)
@@ -85,7 +85,7 @@ class BattleField:
             raise BlockedAreaAroundError(f"Area around coordinates: {coordinates} is not empty")
 
         try:
-            ship = Ship({coordinate: self.battlefield.get(coordinate) for coordinate in coordinates})
+            ship = Ship({coordinate: self.battlefield[coordinate] for coordinate in coordinates})
             self.ships.append(ship)
         except BaseShipError as exp:
             print("Couldn't create a ship.")
@@ -98,9 +98,11 @@ class BattleField:
             coordinate: Coordinate for shooting.
         """
         x, y = coordinate
-        if self.battlefield.get((x, y)).sign == SignObjects.empty_sign.sign:
+        if self.battlefield.get(coordinate) is None:
+            raise CellNotExistError(f"Cell with coordinate {coordinate} is not exist.")
+        if self.battlefield[(x, y)].sign == SignObjects.empty_sign.sign:
             self.battlefield[(x, y)] = Cell(x=x, y=y, sign=SignObjects.miss_sign.sign)
-        elif self.battlefield.get((x, y)).sign == SignObjects.ship_sign.sign:
+        elif self.battlefield[(x, y)].sign == SignObjects.ship_sign.sign:
             self.battlefield[(x, y)] = Cell(x=x, y=y, sign=SignObjects.hit_sign.sign)
         else:
             raise ShotCellEarlierError(f"Cell with coordinate {coordinate} was shot already.")
