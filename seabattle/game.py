@@ -49,7 +49,7 @@ class Game:
     def start_game(self):
         """Method starts a game after player's command if there is any ships."""
         # TODO Update method after adding constraints for ships quantity.
-        if self.player.player_battlefield.ships:
+        if self.player.player_battlefield.ships and self.player.enemy_battlefield.ships:
             self.game_starts = True
         else:
             print("There is no ships for a game. Cannot start a game.")
