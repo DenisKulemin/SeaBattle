@@ -1,5 +1,6 @@
 """Module with game class."""
 import ast
+from typing import Optional
 
 from seabattle.game_errors.battlefield_errors import BaseBattleFieldError, ShotCellEarlierError
 from seabattle.game_objects.player import Player
@@ -14,7 +15,7 @@ class Game:
         self.game_starts = False
 
     @staticmethod
-    def get_command(prompt: str) -> str:
+    def get_command(prompt: str) -> str:    # pragma: no cover
         """
         Method gets user input and returns it for processing.
         Args:
@@ -24,40 +25,46 @@ class Game:
         """
         return input(prompt)
 
-    def player_shoot(self, coordinate: tuple):
+    def player_shoot(self, coordinate: tuple) -> Optional[str]:
         """
         Method processes player shoot command.
         Args:
             coordinate: Tuple with coordinate for shooting.
+
+        Returns:
+            str: New sign after shooting for coordinate.
         """
         if self.game_starts:
-            self.player.shoot(coordinate)
-        else:
-            print("Game is not started. Cannot shooting.")
+            return self.player.shoot(coordinate)
+        print("Game is not started. Cannot shooting.")
+        return None
 
-    def player_set_ship(self, coordinates: list[tuple]):
+    def player_set_ship(self, coordinates: list[tuple]) -> bool:
         """
         Method processes player set ship command.
         Args:
             coordinates: List of ship's cells coordinates.
+
+        Returns:
+            bool: True if ship is set, else - False.
         """
         if not self.game_starts:
             self.player.set_ship_coordinates(coordinates)
-        else:
-            print("Game is started. Cannot add new ship.")
+            return True
+        print("Game is started. Cannot add new ship.")
+        return False
 
     def start_game(self):
         """Method starts a game after player's command if there is any ships."""
-        # TODO Update method after adding constraints for ships quantity.
-        if self.player.player_battlefield.ships and self.player.enemy_battlefield.ships:
+        if self.player.is_all_ships_added():
             self.game_starts = True
         else:
-            print("There is no ships for a game. Cannot start a game.")
+            print("There are not all ships added. Cannot start a game.")
 
-    def main_player_loop(self):
+    def main_player_loop(self):    # pragma: no cover
         """Main game loop for the interactive game through the terminal."""
-        self.player_set_ship([(1, 2), (2, 2)])
-        self.player_set_ship([(4, 4), (6, 6), (4, 6)])
+        _ = self.player_set_ship([(1, 2), (2, 2)])
+        _ = self.player_set_ship([(4, 4), (6, 6), (4, 6)])
         # TODO Delete adding ships to enemy, when bots will be created.
         self.player.enemy_battlefield.set_ship_coordinates([(1, 2), (2, 2)])
         self.player.enemy_battlefield.set_ship_coordinates([(4, 4), (6, 6), (4, 6)])
@@ -78,7 +85,7 @@ class Game:
             elif (command == "shoot") and self.game_starts:
                 try:
                     coordinate = ast.literal_eval(self.get_command("Type coordinate for shooting in format (x, y): "))
-                    self.player_shoot(coordinate)
+                    _ = self.player_shoot(coordinate)
                 except (ShotCellEarlierError, SyntaxError, TypeError) as exp:
                     print(exp)
             else:
@@ -92,5 +99,5 @@ class Game:
         print("The game is over")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    # pragma: no cover
     Game().main_player_loop()

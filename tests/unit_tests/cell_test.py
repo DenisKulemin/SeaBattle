@@ -8,3 +8,9 @@ def test_cell_creation():
     # Check if Cell creates with default sign.
     cell = Cell(x=1, y=1)
     assert cell.sign == SignObjects.empty_sign.sign
+
+
+def test_cell_representation():
+    """Method tests correct Cell object representation."""
+    cell = Cell(x=1, y=1)
+    assert repr(cell) == cell.sign

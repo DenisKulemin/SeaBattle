@@ -2,7 +2,8 @@
 import pytest
 
 from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError, \
-    AreaOutsideBattleFieldError, CellNotExistError
+    AreaOutsideBattleFieldError, CellNotExistError, ExtraShipInFleetError
+from seabattle.game_errors.ship_errors import BaseShipError
 from seabattle.game_objects.battlefield import BattleField
 from seabattle.helpers.constants import SignObjects
 
@@ -26,7 +27,11 @@ def test_set_ship_coordinate(battlefield):
         # Method couldn't set a new ship in one cell perimeter around other ship.
         ([(1, 1), (1, 2)], BlockedAreaError),
         # Method raises TypeError if used wrong coordinate format.
-        ((3, 3), TypeError)
+        ((3, 3), TypeError),
+        # Method raises ExtraShipInFleetError if there are no more ships with that size can be added.
+        ([(10, 1), (10, 2), (10, 3), (10, 4), (10, 5)], ExtraShipInFleetError),
+        # Method raises BaseShipError if we set coordinates that cannot be used for building a ship.
+        ([(10, 10), (9, 9)], BaseShipError)
     ]
 )
 def test_set_ship_coordinate_raised_error(battlefield, coordinates, error):
