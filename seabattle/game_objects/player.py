@@ -1,14 +1,34 @@
 """Module contains player class."""
+from typing import Tuple, List
+
 from seabattle.game_objects.battlefield import BattleField
 
 
-class Player:
-    """Class contains battlefields and rule them in a game."""
-    name: str
-    enemy_name: str
+class BasePlayer:
+    """Base class for player."""
     player_battlefield: BattleField
     enemy_battlefield: BattleField
     is_game_over: bool
+
+    def _is_game_over(self):  # pragma: no cover
+        raise NotImplementedError
+
+    def shoot(self, coordinate: Tuple[int, int]) -> str:  # pragma: no cover
+        """Base method for shooting."""
+        raise NotImplementedError
+
+    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:  # pragma: no cover
+        """Base method for adding ship."""
+        raise NotImplementedError
+
+    def is_all_ships_added(self) -> bool:
+        """Method check if all ships added to the battlefield."""
+        return self.player_battlefield.is_all_ships_added() and self.enemy_battlefield.is_all_ships_added()
+
+
+class Player(BasePlayer):
+    """Class contains battlefields and rule them in a game."""
+    player_battlefield: BattleField
 
     def __init__(self, player_name: str, enemy_name: str):
         self.player_battlefield = BattleField(name=player_name)
@@ -25,16 +45,19 @@ class Player:
         """Method checks if game for player is over based on its battlefield."""
         self.is_game_over = self.player_battlefield.is_game_over or self.enemy_battlefield.is_game_over
 
-    def shoot(self, coordinate):
+    def shoot(self, coordinate: Tuple[int, int]) -> str:
         """
         Method runs shoot command on enemy battlefield.
         Args:
             coordinate: Coordinate for shooting.
+        Returns:
+            str: New sign after shooting for coordinate.
         """
-        self.enemy_battlefield.shoot(coordinate)
+        shooting_result = self.enemy_battlefield.shoot(coordinate)
         self._is_game_over()
+        return shooting_result
 
-    def set_ship_coordinates(self, coordinates):
+    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:
         """
         Method sets ship signs with specified coordinates on player battlefield.
         Args:

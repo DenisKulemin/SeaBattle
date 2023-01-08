@@ -70,3 +70,13 @@ def test_player_repr():
                            "                   \n" \
                            "                   \n" \
                            "                   "
+
+
+def test_all_ships_added_correct(game):
+    """
+    Method tests that player returns true if all ships (player's and enemies are added to the board).
+    Args:
+        game: Game object with ships.
+    """
+
+    assert game.player.is_all_ships_added()

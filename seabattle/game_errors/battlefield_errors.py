@@ -23,3 +23,7 @@ class ShotCellEarlierError(BaseBattleFieldError):
 
 class CellNotExistError(BaseBattleFieldError):
     """Raised if cell with specified coordinates is not exist."""
+
+
+class ExtraShipInFleetError(BaseBattleFieldError):
+    """Raised if we add too many ships with size to the battlefield."""
