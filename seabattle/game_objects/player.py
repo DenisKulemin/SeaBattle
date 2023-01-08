@@ -1,10 +1,11 @@
 """Module contains player class."""
+from abc import ABC
 from typing import Tuple, List
 
 from seabattle.game_objects.battlefield import BattleField
 
 
-class BasePlayer:
+class BasePlayer(ABC):
     """Base class for player."""
     player_battlefield: BattleField
     enemy_battlefield: BattleField
@@ -13,8 +14,12 @@ class BasePlayer:
     def _is_game_over(self):  # pragma: no cover
         raise NotImplementedError
 
-    def shoot(self, coordinate: Tuple[int, int]) -> str:  # pragma: no cover
+    def shoot(self, coordinate: Tuple[int, int], shooting_result: str):  # pragma: no cover
         """Base method for shooting."""
+        raise NotImplementedError
+
+    def enemy_shooting(self, coordinate: Tuple[int, int]) -> str:  # pragma: no cover
+        """Base method for enemy shooting."""
         raise NotImplementedError
 
     def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:  # pragma: no cover
@@ -23,7 +28,7 @@ class BasePlayer:
 
     def is_all_ships_added(self) -> bool:
         """Method check if all ships added to the battlefield."""
-        return self.player_battlefield.is_all_ships_added() and self.enemy_battlefield.is_all_ships_added()
+        return self.player_battlefield.is_all_ships_added()
 
 
 class Player(BasePlayer):
@@ -45,15 +50,24 @@ class Player(BasePlayer):
         """Method checks if game for player is over based on its battlefield."""
         self.is_game_over = self.player_battlefield.is_game_over or self.enemy_battlefield.is_game_over
 
-    def shoot(self, coordinate: Tuple[int, int]) -> str:
+    def shoot(self, coordinate: Tuple[int, int], shooting_result: str):
         """
         Method runs shoot command on enemy battlefield.
+        Args:
+            coordinate: Coordinate for shooting.
+            shooting_result: Sing of shooting result on enemy battlefield.
+        """
+        self.enemy_battlefield.battlefield[coordinate].sign = shooting_result
+
+    def enemy_shooting(self, coordinate: Tuple[int, int]) -> str:
+        """
+        Method runs shoot command on player battlefield.
         Args:
             coordinate: Coordinate for shooting.
         Returns:
             str: New sign after shooting for coordinate.
         """
-        shooting_result = self.enemy_battlefield.shoot(coordinate)
+        shooting_result = self.player_battlefield.shoot(coordinate)
         self._is_game_over()
         return shooting_result
 

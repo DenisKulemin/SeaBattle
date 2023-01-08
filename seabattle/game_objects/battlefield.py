@@ -1,5 +1,5 @@
 """Module for creation battlefield."""
-from typing import Tuple, List, Optional
+from typing import Tuple, List
 
 from seabattle.game_errors.ship_errors import BaseShipError
 from seabattle.game_objects.cell import Cell
@@ -81,11 +81,11 @@ class BattleField:
         """Method checks if battlefield has ship signs."""
         self.is_game_over = not sum(sign.sign == SignObjects.ship_sign.sign for sign in self.battlefield.values())
 
-    def _return_new_ship_from_list(self, number_of_cells: int) -> Optional[Tuple[Cell]]:
+    def _return_new_ship_from_list(self, number_of_cells: int) -> None:
         for index, ship in enumerate(self.__new_ships):
             if ship == number_of_cells:
-                return self.__new_ships.pop(index)
-        return None
+                self.__new_ships.pop(index)
+                break
 
     def is_all_ships_added(self) -> bool:
         """Method checks if all ships were added to the battlefield."""
@@ -131,6 +131,9 @@ class BattleField:
         x, y = coordinate
         if self.battlefield.get(coordinate) is None:
             raise CellNotExistError(f"Cell with coordinate {coordinate} is not exist.")
+        if not self._check_cell_coordinates([coordinate]):
+            raise AreaOutsideBattleFieldError(f"Area with coordinates: {coordinate} is outside the battlefield."
+                                              f"Should be inside x - 1:{self.width - 1}, y - 1:{self.height - 1}")
         if self.battlefield[(x, y)].sign == SignObjects.empty_sign.sign:
             self.battlefield[(x, y)] = Cell(x=x, y=y, sign=SignObjects.miss_sign.sign)
         elif self.battlefield[(x, y)].sign == SignObjects.ship_sign.sign:
