@@ -49,11 +49,16 @@ def test_game_is_over(game):
         game: Game object with ships.
     """
     game.start_game()
-    for coordinate in game.player.player_battlefield.battlefield.keys():
-        _ = game.player_shoot(coordinate)
+    for coordinate in [
+        (x, y) for x in range(1, game.player.player_battlefield.width)
+        for y in range(1, game.player.player_battlefield.height)
+    ]:
+        game.player_shoot(coordinate)
+        game.enemy_shoot()
 
     # Check if game is over after all ships destroyed.
     assert game.player.is_game_over
+    assert game.enemy.is_game_over
 
 
 def test_game_is_not_shooting_before_start(game):
@@ -62,7 +67,12 @@ def test_game_is_not_shooting_before_start(game):
     Args:
         game: Game object with ships.
     """
-    assert game.player_shoot((1, 2)) is None
+    coordinate = (1, 2)
+    game.player_shoot(coordinate)
+    assert game.player.enemy_battlefield.battlefield[coordinate].sign is SignObjects.empty_sign.sign
+    enemy_battlefield = repr(game.enemy.player_battlefield)
+    game.enemy_shoot()
+    assert repr(game.enemy.player_battlefield) == enemy_battlefield
 
 
 def test_game_is_shooting_after_start(game):
@@ -72,7 +82,9 @@ def test_game_is_shooting_after_start(game):
         game: Game object with ships.
     """
     game.start_game()
-    assert game.player_shoot((1, 2)) is SignObjects.hit_sign.sign
+    coordinate = (1, 2)
+    game.player_shoot(coordinate)
+    assert game.player.enemy_battlefield.battlefield[coordinate].sign is not SignObjects.empty_sign.sign
 
 
 def test_game_is_adding_ship_before_game_start():
@@ -81,6 +93,14 @@ def test_game_is_adding_ship_before_game_start():
     """
     game = Game()
     assert game.player_set_ship([(4, 4)])
+
+
+def test_game_cannot_add_ship_before_game_start():
+    """
+    Method checks if game process correctly if it cannot add a ship before game is started.
+    """
+    game = Game()
+    assert game.player_set_ship([(4, 4), (4, 5), (4, 6), (4, 7), (4, 8)]) is None
 
 
 def test_game_is_not_adding_ship_after_game_start(game):

@@ -84,6 +84,16 @@ def test_shoot_not_existing_coordinates(battlefield):
         battlefield.shoot((50, 50))
 
 
+def test_shoot_border_coordinates(battlefield):
+    """
+    Method tests that battlefield raises AreaOutsideBattleFieldError if coordinates are belongs to battlefield boarder.
+    Args:
+        battlefield: Battlefield object.
+    """
+    with pytest.raises(AreaOutsideBattleFieldError):
+        battlefield.shoot((0, 0))
+
+
 @pytest.mark.parametrize(
     ("coordinate", "sign", "result"), [
         # Line has 19 signs: 10 - cells signs and 9 - whitespaces between them.
