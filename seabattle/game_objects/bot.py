@@ -13,14 +13,10 @@ class EasyBot(Player):
 
     def __init__(self, player_name: str, enemy_name: str):
         super().__init__(player_name, enemy_name)
-        self.coordinates_for_shooting = [
-            (x, y) for x in range(1, self.player_battlefield.width)
-            for y in range(1, self.player_battlefield.height)
-        ]
-        self.__fill_bot_battlefield()
+        self._fill_bot_battlefield()
 
     @staticmethod
-    def __create_bot_ship_coordinates(ship_len: int, empty_cells: dict) -> list:
+    def _create_bot_ship_coordinates(ship_len: int, empty_cells: dict) -> list:
         """
         Method creates list of possible coordinates for ship with specified length according to correctly available
         cells.
@@ -41,7 +37,7 @@ class EasyBot(Player):
         return list_of_coordinates
 
     @staticmethod
-    def __clear_not_empty_coordinates(coordinates: List[Tuple[int, int]], empty_cells: dict):
+    def _clear_not_empty_coordinates(coordinates: List[Tuple[int, int]], empty_cells: dict):
         """
         Method clear the dictionary with empty cells.
         Args:
@@ -51,26 +47,18 @@ class EasyBot(Player):
         for x, y in coordinates:
             _ = [empty_cells.pop((x + x_, y + y_), None) for x_, y_ in [(0, 0)] + AREA_AROUND]
 
-    def __fill_bot_battlefield(self):
+    def _fill_bot_battlefield(self):
         """Method creates the full flotilla of ships for bot battlefield with random coordinates."""
         empty_cells = {key: 1 for key in self.coordinates_for_shooting}
         for ship_len in deepcopy(self.player_battlefield.create_initial_ships()):
-            list_of_coordinates = self.__create_bot_ship_coordinates(ship_len, empty_cells)
+            list_of_coordinates = self._create_bot_ship_coordinates(ship_len, empty_cells)
             for _ in range(len(list_of_coordinates)):
+                # list_of_coordinates should contain only valid ships coordinates but just in case use try except.
                 try:
                     coordinates = random.choice(list_of_coordinates)
                     list_of_coordinates.remove(coordinates)
                     self.player_battlefield.set_ship_coordinates(coordinates)
-                    self.__clear_not_empty_coordinates(coordinates, empty_cells)
+                    self._clear_not_empty_coordinates(coordinates, empty_cells)
                     break
                 except (BaseBattleFieldError, SyntaxError, TypeError):
                     continue
-
-    def choose_shooting_coordinate(self) -> Tuple[int, int]:
-        """
-        Method chooses the random coordinate for shooting.
-
-        Returns:
-            tuple: Coordinate for shooting
-        """
-        return self.coordinates_for_shooting.pop(random.randint(0, len(self.coordinates_for_shooting) - 1))

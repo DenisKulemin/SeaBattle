@@ -1,12 +1,13 @@
 """Module with game class."""
 import ast
+import random
 from typing import Optional
 
 from seabattle.game_errors.battlefield_errors import BaseBattleFieldError, ShotCellEarlierError, ExtraShipInFleetError
 from seabattle.game_errors.ship_errors import BaseShipError
 from seabattle.game_objects.bot import EasyBot
 from seabattle.game_objects.player import Player
-from seabattle.helpers.constants import SHIPS_COORDINATES
+from seabattle.helpers.constants import SHIPS_COORDINATES, SignObjects
 
 
 class Game:
@@ -17,6 +18,7 @@ class Game:
         self.player = Player(player_name="Mike", enemy_name="Sailor")
         self.enemy = EasyBot(player_name="Sailor", enemy_name="Mike")
         self.game_starts = False
+        self.is_player_move = random.choice([True, False])
 
     @staticmethod
     def get_command(prompt: str) -> str:    # pragma: no cover
@@ -39,8 +41,10 @@ class Game:
             str: New sign after shooting for coordinate.
         """
         if self.game_starts:
-            shooting_result = self.enemy.enemy_shooting(coordinate)
-            self.player.shoot(coordinate, shooting_result)
+            shooting_results, is_killed = self.enemy.enemy_shooting(coordinate)
+            if shooting_results[coordinate] != SignObjects.hit_sign.sign:
+                self.is_player_move = not self.is_player_move
+            self.player.shoot(shooting_results, is_killed)
         else:
             print("Game is not started. Cannot shooting.")
 
@@ -53,10 +57,13 @@ class Game:
         """
         if self.game_starts:
             coordinate = self.enemy.choose_shooting_coordinate()
-            shooting_result = self.player.enemy_shooting(coordinate)
-            self.enemy.shoot(coordinate, shooting_result)
+            shooting_results, is_killed = self.player.enemy_shooting(coordinate)
+            if shooting_results[coordinate] != SignObjects.hit_sign.sign:
+                self.is_player_move = not self.is_player_move
+            self.enemy.shoot(shooting_results, is_killed)
         else:
             print("Game is not started. Cannot shooting.")
+            self.is_player_move = not self.is_player_move
 
     def player_set_ship(self, coordinates: list[tuple]) -> Optional[bool]:
         """
@@ -85,40 +92,52 @@ class Game:
             print("There are not all ships added. Cannot start a game.")
 
     def main_player_loop(self):  # pragma: no cover
+
+        # pylint: disable=too-many-branches
+
         """Main game loop for the interactive game through the terminal."""
         # TODO Remove for read game.
         for coordinates in SHIPS_COORDINATES:
             _ = self.player_set_ship(coordinates)
-        command = self.get_command("Type your command (possible commands: set_ship, start_game, shoot, exit): ")
+        command = None
         while command != "exit":
-            if (command == "set_ship") and not self.game_starts:
-                try:
-                    coordinates = ast.literal_eval(self.get_command("Type coordinates in format [(x, y), (x, y)]: "))
-                    _ = self.player_set_ship(coordinates)
-                except (BaseBattleFieldError, SyntaxError, TypeError) as exp:
-                    print(exp)
-            elif (command == "set_ship") and self.game_starts:
-                print("Game is started. Cannot add new ship.")
-            elif command == "start_game":
-                self.start_game()
-            elif (command == "shoot") and not self.game_starts:
-                print("Game is not started. Cannot shooting.")
-            elif (command == "shoot") and self.game_starts:
-                try:
-                    coordinate = ast.literal_eval(self.get_command("Type coordinate for shooting in format (x, y): "))
-                    self.player_shoot(coordinate)
-                except (ShotCellEarlierError, SyntaxError, TypeError) as exp:
-                    print(exp)
+            if self.is_player_move:
+
+                if not self.player.is_game_over or self.enemy.is_game_over:
+                    command = self.get_command(
+                        "Type your command (possible commands: set_ship, start_game, shoot, exit): ")
+                else:
+                    command = "exit"
+
+                if (command == "set_ship") and not self.game_starts:
+                    try:
+                        coordinates = ast.literal_eval(
+                            self.get_command("Type coordinates in format [(x, y), (x, y)]: ")
+                        )
+                        _ = self.player_set_ship(coordinates)
+                    except (BaseBattleFieldError, SyntaxError, TypeError) as exp:
+                        print(exp)
+                elif (command == "set_ship") and self.game_starts:
+                    print("Game is started. Cannot add new ship.")
+                elif command == "start_game":
+                    self.start_game()
+                elif (command == "shoot") and not self.game_starts:
+                    print("Game is not started. Cannot shooting.")
+                elif (command == "shoot") and self.game_starts:
+                    try:
+                        coordinate = ast.literal_eval(
+                            self.get_command("Type coordinate for shooting in format (x, y): ")
+                        )
+                        self.player_shoot(coordinate)
+                    except (ShotCellEarlierError, SyntaxError, TypeError) as exp:
+                        print(exp)
+                else:
+                    print(f"Unknown command: {command}")
+                print(self.player)
             else:
-                print(f"Unknown command: {command}")
-            print(self.player)
-            print("Enemy shooting!")
-            self.enemy_shoot()
-            print(self.player)
-            if not self.player.is_game_over or self.enemy.is_game_over:
-                command = self.get_command("Type your command (possible commands: set_ship, start_game, shoot, exit): ")
-            else:
-                command = "exit"
+                print("Enemy shooting!")
+                self.enemy_shoot()
+                print(self.player)
 
         print("The game is over")
 

@@ -3,6 +3,7 @@ import pytest
 
 from seabattle.game import Game
 from seabattle.game_objects.battlefield import BattleField
+from seabattle.game_objects.player import Player
 from seabattle.helpers.constants import SHIPS_COORDINATES
 
 
@@ -21,4 +22,10 @@ def battlefield_fixture():
     """Method returns battlefield with one ship."""
     battlefield = BattleField(name="Mike")
     battlefield.set_ship_coordinates([(1, 1), (1, 2)])
-    return battlefield
+    yield battlefield
+
+
+@pytest.fixture(name="player")
+def player_fixture():
+    """Method returns player object."""
+    yield Player(player_name="Mike", enemy_name="Sailor")

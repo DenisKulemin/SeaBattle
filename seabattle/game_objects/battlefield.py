@@ -21,7 +21,7 @@ class BattleField:
         self.height = height
         self.battlefield = {(x, y): Cell(x=x, y=y) for x in range(self.width + 1) for y in range(self.height + 1)}
         self.__new_ships: list = self.create_initial_ships()
-        self.ships: list = []
+        self.ships: dict = {}
         self.is_game_over = False
         self.__is_visible = is_visible
 
@@ -38,8 +38,7 @@ class BattleField:
         """Method creates list of initial ships lengths."""
         new_ships = []
         for ind, i in enumerate(range(4, 0, -1)):
-            for _ in range(0, ind + 1):
-                new_ships.append(i)
+            new_ships.extend([i for _ in range(0, ind + 1)])
         return new_ships
 
     def _check_cell_coordinates(self, coordinates: List[Tuple[int, int]]) -> bool:
@@ -114,19 +113,19 @@ class BattleField:
 
         try:
             ship = Ship({coordinate: self.battlefield[coordinate] for coordinate in coordinates})
-            self.ships.append(ship)
+            self.ships.update({ship.id: ship})
         except BaseShipError as exp:
             print("Couldn't create a ship.")
             print(exp)
             raise BaseShipError from exp
 
-    def shoot(self, coordinate: Tuple[int, int]) -> str:
+    def shoot(self, coordinate: Tuple[int, int]) -> Tuple[dict[Tuple[int, int], str], bool]:
         """
         Method contains logic for shooting and changing marks on battlefield.
         Args:
             coordinate: Coordinate for shooting.
         Returns:
-            str: New sign after shooting for coordinate.
+            str: New sign after shooting for coordinate and bool value if the ship was killed.
         """
         x, y = coordinate
         if self.battlefield.get(coordinate) is None:
@@ -135,10 +134,17 @@ class BattleField:
             raise AreaOutsideBattleFieldError(f"Area with coordinates: {coordinate} is outside the battlefield."
                                               f"Should be inside x - 1:{self.width - 1}, y - 1:{self.height - 1}")
         if self.battlefield[(x, y)].sign == SignObjects.empty_sign.sign:
-            self.battlefield[(x, y)] = Cell(x=x, y=y, sign=SignObjects.miss_sign.sign)
+            self.battlefield[(x, y)].sign = SignObjects.miss_sign.sign
         elif self.battlefield[(x, y)].sign == SignObjects.ship_sign.sign:
-            self.battlefield[(x, y)] = Cell(x=x, y=y, sign=SignObjects.hit_sign.sign)
+            self.battlefield[(x, y)].sign = SignObjects.hit_sign.sign
         else:
             raise ShotCellEarlierError(f"Cell with coordinate {coordinate} was shot already.")
+
+        # Get ship id and check if ship is still alive.
+        ship_id = self.battlefield[(x, y)].ship_id
+        is_killed = False
+        if ship_id is not None:
+            is_killed = not self.ships[ship_id].is_ship_alive()
+
         self._game_is_over()
-        return self.battlefield[(x, y)].sign
+        return {coordinate: self.battlefield[coordinate].sign}, is_killed

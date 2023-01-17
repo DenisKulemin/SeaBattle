@@ -1,4 +1,5 @@
 """Module for creation ship objects."""
+import uuid
 from dataclasses import dataclass
 
 from seabattle.game_errors.ship_errors import NotParallelShipError, WrongShipSizeError, WrongShipCoordinateError
@@ -11,14 +12,14 @@ class Ship:
     """Class contains ship object and its methods."""
 
     def __init__(self, ship_cells: dict[tuple, Cell]):
+        self.id = uuid.uuid4()
         self._check_coordinates(list(ship_cells.keys()))
 
-        self.ship = self._set_ship_sign(ship_cells)
+        self.ship = self._set_ship_info(ship_cells)
 
-    @staticmethod
-    def _set_ship_sign(ship_cells: dict[tuple, Cell]) -> dict[tuple, Cell]:
+    def _set_ship_info(self, ship_cells: dict[tuple, Cell]) -> dict[tuple, Cell]:
         """
-        Method changes cell signs from empty to ship sign.
+        Method changes cell signs from empty to ship sign and add ship id.
         Args:
             ship_cells: Dictionary with cell coordinates as keys, and cells as values
 
@@ -27,6 +28,7 @@ class Ship:
         """
         for cell in ship_cells.values():
             cell.sign = SignObjects.ship_sign.sign
+            cell.ship_id = self.id
 
         return ship_cells
 
@@ -57,3 +59,12 @@ class Ship:
         if coordinates != theory_ship_coord:
             raise WrongShipCoordinateError(f"Ship with coordinates {coordinates} doesn't match theory "
                                            f"coordinates {theory_ship_coord}.")
+
+    def is_ship_alive(self) -> bool:
+        """
+        Method check if there are any ship's cells that still alive.
+
+        Returns:
+            True, if there is at least one ship cell that alive.
+        """
+        return sum(cell.sign == SignObjects.ship_sign.sign for cell in self.ship.values()) > 0
