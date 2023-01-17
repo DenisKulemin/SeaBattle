@@ -49,11 +49,11 @@ def test_game_is_over(game):
         game: Game object with ships.
     """
     game.start_game()
-    for coordinate in [
-        (x, y) for x in range(1, game.player.player_battlefield.width)
-        for y in range(1, game.player.player_battlefield.height)
-    ]:
-        game.player_shoot(coordinate)
+
+    while game.player.coordinates_for_shooting:
+        game.player_shoot(game.player.choose_shooting_coordinate())
+
+    while game.enemy.coordinates_for_shooting:
         game.enemy_shoot()
 
     # Check if game is over after all ships destroyed.

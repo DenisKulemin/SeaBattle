@@ -5,7 +5,7 @@ from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAr
     AreaOutsideBattleFieldError, CellNotExistError, ExtraShipInFleetError
 from seabattle.game_errors.ship_errors import BaseShipError
 from seabattle.game_objects.battlefield import BattleField
-from seabattle.helpers.constants import SignObjects
+from seabattle.helpers.constants import SignObjects, SHIPS_COORDINATES
 
 
 def test_set_ship_coordinate(battlefield):
@@ -147,10 +147,10 @@ def test_player_battlefield_repr(battlefield, coordinate, sign, result):
 
 def test_enemy_battlefield_repr():
     """Method checks if enemy battlefield printing in console works correct."""
-    board_game = BattleField(name="Sailor", is_visible=False)
+    battlefield = BattleField(name="Sailor", is_visible=False)
     # Check battlefield with ship mark. Player shouldn't see enemy's ships.
-    board_game.battlefield.get((1, 2)).sign = SignObjects.ship_sign.sign
-    assert repr(board_game) == \
+    battlefield.battlefield.get((1, 2)).sign = SignObjects.ship_sign.sign
+    assert repr(battlefield) == \
            "                   \n" \
            "                   \n" \
            "                   \n" \
@@ -161,3 +161,22 @@ def test_enemy_battlefield_repr():
            "                   \n" \
            "                   \n" \
            "                   "
+
+
+def test_create_initial_ships():
+    """Method test battlefield creates the correct list of ships lengths."""
+    battlefield = BattleField(name="Sailor", is_visible=False)
+    assert battlefield.create_initial_ships() == [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
+
+
+def test_all_ships_added_correct():
+    """Method tests that battlefield returns correct bool value if all ships or not."""
+    battlefield = BattleField(name="Sailor", is_visible=False)
+
+    # Check before adding the ship. Until we add all ships, should be false.
+    for ship_coordinate in SHIPS_COORDINATES:
+        assert not battlefield.is_all_ships_added()
+        battlefield.set_ship_coordinates(ship_coordinate)
+
+    # After adding the last ship, should be true.
+    assert battlefield.is_all_ships_added()

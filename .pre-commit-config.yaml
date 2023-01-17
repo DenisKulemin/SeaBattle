@@ -15,7 +15,7 @@ repos:
       - id: pylint
         args:
           - "--disable=import-error,no-member,no-name-in-module,too-few-public-methods,fixme"
-          - "--good-names=i,j,k,ex,Run,_,x,y"
+          - "--good-names=i,j,k,ex,Run,_,x,y,id"
           - "--max-line-length=120"
   - repo: meta
     hooks:
