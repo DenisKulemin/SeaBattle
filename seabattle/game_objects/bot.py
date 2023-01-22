@@ -1,9 +1,7 @@
 """Module contains bot objects."""
 import random
 from copy import deepcopy
-from typing import Tuple, List
-
-from seabattle.game_errors.battlefield_errors import BaseBattleFieldError
+from typing import Tuple, List, Dict
 from seabattle.game_objects.player import Player
 from seabattle.helpers.constants import AREA_AROUND
 
@@ -16,7 +14,7 @@ class EasyBot(Player):
         self._fill_bot_battlefield()
 
     @staticmethod
-    def _create_bot_ship_coordinates(ship_len: int, empty_cells: dict) -> list:
+    def _create_bot_ship_coordinates(ship_len: int, empty_cells: Dict[Tuple[int, int], int]) -> List[Tuple[int, int]]:
         """
         Method creates list of possible coordinates for ship with specified length according to correctly available
         cells.
@@ -25,16 +23,16 @@ class EasyBot(Player):
             empty_cells: Dictionary with coordinates of empty cells for bot battlefield.
 
         Returns:
-            list: List of all possible coordinates for ship.
+            list: The random coordinates for ship from list of all possible coordinates.
         """
         list_of_coordinates = []
         for x, y in empty_cells.keys():
             for dimension in [(1, 0), (0, 1)]:
-                is_coordinates_empty = [empty_cells.get(x + i * dimension[0], y + i * dimension[1])
+                is_coordinates_empty = [empty_cells.get((x + i * dimension[0], y + i * dimension[1]))
                                         for i in range(ship_len)]
-                if None is not is_coordinates_empty:
+                if None not in is_coordinates_empty:
                     list_of_coordinates.append([(x + i * dimension[0], y + i * dimension[1]) for i in range(ship_len)])
-        return list_of_coordinates
+        return random.choice(list_of_coordinates)
 
     @staticmethod
     def _clear_not_empty_coordinates(coordinates: List[Tuple[int, int]], empty_cells: dict):
@@ -51,14 +49,6 @@ class EasyBot(Player):
         """Method creates the full flotilla of ships for bot battlefield with random coordinates."""
         empty_cells = {key: 1 for key in self.coordinates_for_shooting}
         for ship_len in deepcopy(self.player_battlefield.create_initial_ships()):
-            list_of_coordinates = self._create_bot_ship_coordinates(ship_len, empty_cells)
-            for _ in range(len(list_of_coordinates)):
-                # list_of_coordinates should contain only valid ships coordinates but just in case use try except.
-                try:
-                    coordinates = random.choice(list_of_coordinates)
-                    list_of_coordinates.remove(coordinates)
-                    self.player_battlefield.set_ship_coordinates(coordinates)
-                    self._clear_not_empty_coordinates(coordinates, empty_cells)
-                    break
-                except (BaseBattleFieldError, SyntaxError, TypeError):
-                    continue
+            coordinates = self._create_bot_ship_coordinates(ship_len, empty_cells)
+            self.player_battlefield.set_ship_coordinates(coordinates)
+            self._clear_not_empty_coordinates(coordinates, empty_cells)

@@ -5,6 +5,8 @@ from seabattle.game import Game
 from seabattle.game_objects.battlefield import BattleField
 from seabattle.game_objects.player import Player
 from seabattle.helpers.constants import SHIPS_COORDINATES
+from seabattle.listener.listener import app
+from seabattle.listener.validators import GAME_STORAGE
 
 
 @pytest.fixture(name="game")
@@ -29,3 +31,53 @@ def battlefield_fixture():
 def player_fixture():
     """Method returns player object."""
     yield Player(player_name="Mike", enemy_name="Sailor")
+
+
+@pytest.fixture(name="application")
+def app_fixture():
+    """Method returns flask application object and dictionary with game information for testing."""
+    test_info = {}
+
+    game = Game()
+    GAME_STORAGE.update({game.id: game})
+    test_info.update({"just_created": {"gameId": str(game.id), "playerId": str(game.player.id)}})
+
+    game = Game()
+    for coordinates in SHIPS_COORDINATES:
+        game.player_set_ship(coordinates)
+    GAME_STORAGE.update({game.id: game})
+    test_info.update({"ships_added": {"gameId": str(game.id), "playerId": str(game.player.id)}})
+
+    game = Game()
+    for coordinates in SHIPS_COORDINATES:
+        game.player_set_ship(coordinates)
+    game.start_game()
+    game.is_player_move = True
+    GAME_STORAGE.update({game.id: game})
+    test_info.update({"game_started_player": {"gameId": str(game.id), "playerId": str(game.player.id)}})
+
+    game = Game()
+    for coordinates in SHIPS_COORDINATES:
+        game.player_set_ship(coordinates)
+    game.start_game()
+    game.is_player_move = False
+    GAME_STORAGE.update({game.id: game})
+    test_info.update({"game_started_enemy": {"gameId": str(game.id), "playerId": str(game.player.id)}})
+
+    game = Game()
+    for coordinates in SHIPS_COORDINATES:
+        game.player_set_ship(coordinates)
+    game.start_game()
+    game.is_player_move = True
+    game.player_shoot((10, 1))
+    game.is_player_move = True
+    GAME_STORAGE.update({game.id: game})
+    test_info.update({"game_started_player_after_shoot": {"gameId": str(game.id), "playerId": str(game.player.id)}})
+
+    yield app, test_info
+
+
+@pytest.fixture(name="client")
+def client_fixture(application):
+    """Method returns flask client object."""
+    yield application[0].test_client()
