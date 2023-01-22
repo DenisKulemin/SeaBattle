@@ -1,6 +1,7 @@
 """Module contains player class."""
 import random
 from typing import Tuple, List, Set, Dict, Optional
+from uuid import uuid4, UUID
 
 from seabattle.game_objects.battlefield import BattleField
 from seabattle.helpers.constants import SignObjects, DIAG_AROUND, AREA_AROUND, HORIZONTAL_AROUND, VERTICAL_AROUND
@@ -8,6 +9,10 @@ from seabattle.helpers.constants import SignObjects, DIAG_AROUND, AREA_AROUND, H
 
 class Player:
     """Class contains battlefields and rule them in a game."""
+
+    # pylint: disable=too-many-instance-attributes
+
+    id: UUID
     player_battlefield: BattleField
     enemy_battlefield: BattleField
     is_game_over: bool
@@ -17,6 +22,7 @@ class Player:
     is_horizontal: Optional[bool]
 
     def __init__(self, player_name: str, enemy_name: str):
+        self.id = uuid4()
         self.player_battlefield = BattleField(name=player_name)
         self.enemy_battlefield = BattleField(name=enemy_name, is_visible=False)
         self.is_game_over = self.player_battlefield.is_game_over or self.enemy_battlefield.is_game_over
@@ -191,5 +197,7 @@ class Player:
         for new_coordinate in coordinates_for_update:
             if battlefield.battlefield[new_coordinate].sign == SignObjects.empty_sign.sign:
                 battlefield.battlefield[new_coordinate].sign = SignObjects.miss_sign.sign
-            shooting_results.update({new_coordinate: battlefield.battlefield[new_coordinate].sign})
+            if 1 <= new_coordinate[0] <= self.player_battlefield.width and \
+                    1 <= new_coordinate[1] <= self.player_battlefield.height:
+                shooting_results.update({new_coordinate: battlefield.battlefield[new_coordinate].sign})
         return shooting_results

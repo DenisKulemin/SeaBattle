@@ -1,0 +1,18 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+source =
+    ./seabattle
+    ./seabattle/game_errors
+    ./seabattle/game_objects
+    ./seabattle/helpers
+    ./seabattle/listener
+    ./tests
+    ./tests/integration_tests
+    ./tests/unit_tests
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:

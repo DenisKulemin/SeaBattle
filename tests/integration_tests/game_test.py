@@ -1,34 +1,37 @@
 """Module with integration tests for the whole game."""
+import pytest
+
 from seabattle.game import Game
+from seabattle.game_errors.game_errors import StartedGameError, NotStartedGameError
 from seabattle.helpers.constants import SignObjects
 
 
 def test_game_is_started(game):
     """
-    Method tests that game switch game_starts value from False to True correctly.
+    Method tests that game switch is_game_started value from False to True correctly.
     Args:
         game: Game object with ships.
     """
 
-    assert not game.game_starts
+    assert not game.is_game_started
 
     # Start game.
     game.start_game()
 
-    assert game.game_starts
+    assert game.is_game_started
 
 
 def test_game_is_not_started():
     """
-    Method tests that game couldn't switch game_starts value from False to True if not all ships added.
+    Method tests that game couldn't switch is_game_started value from False to True if not all ships added.
     """
     game = Game()
-    assert not game.game_starts
+    assert not game.is_game_started
 
     # Start game.
     game.start_game()
 
-    assert not game.game_starts
+    assert not game.is_game_started
 
 
 def test_game_is_not_finished(game):
@@ -50,15 +53,14 @@ def test_game_is_over(game):
     """
     game.start_game()
 
-    while game.player.coordinates_for_shooting:
-        game.player_shoot(game.player.choose_shooting_coordinate())
+    while game.player.coordinates_for_shooting and game.enemy.coordinates_for_shooting:
+        if game.is_player_move:
+            game.player_shoot(game.player.choose_shooting_coordinate())
+        else:
+            game.enemy_shoot()
 
-    while game.enemy.coordinates_for_shooting:
-        game.enemy_shoot()
-
-    # Check if game is over after all ships destroyed.
-    assert game.player.is_game_over
-    assert game.enemy.is_game_over
+    # Check if game is over after all ships for one player are destroyed.
+    assert (game.player.is_game_over or game.enemy.is_game_over)
 
 
 def test_game_is_not_shooting_before_start(game):
@@ -67,12 +69,15 @@ def test_game_is_not_shooting_before_start(game):
     Args:
         game: Game object with ships.
     """
+    game.is_player_move = True
     coordinate = (1, 2)
-    game.player_shoot(coordinate)
-    assert game.player.enemy_battlefield.battlefield[coordinate].sign is SignObjects.empty_sign.sign
-    enemy_battlefield = repr(game.enemy.player_battlefield)
-    game.enemy_shoot()
-    assert repr(game.enemy.player_battlefield) == enemy_battlefield
+    # Test player shoot.
+    with pytest.raises(NotStartedGameError):
+        game.player_shoot(coordinate)
+
+    # Test enemy shoot.
+    with pytest.raises(NotStartedGameError):
+        game.enemy_shoot()
 
 
 def test_game_is_shooting_after_start(game):
@@ -82,6 +87,7 @@ def test_game_is_shooting_after_start(game):
         game: Game object with ships.
     """
     game.start_game()
+    game.is_player_move = True
     coordinate = (1, 2)
     game.player_shoot(coordinate)
     assert game.player.enemy_battlefield.battlefield[coordinate].sign is not SignObjects.empty_sign.sign
@@ -95,14 +101,6 @@ def test_game_is_adding_ship_before_game_start():
     assert game.player_set_ship([(4, 4)])
 
 
-def test_game_cannot_add_ship_before_game_start():
-    """
-    Method checks if game process correctly if it cannot add a ship before game is started.
-    """
-    game = Game()
-    assert game.player_set_ship([(4, 4), (4, 5), (4, 6), (4, 7), (4, 8)]) is None
-
-
 def test_game_is_not_adding_ship_after_game_start(game):
     """
     Method checks if game couldn't add the ship after game is started.
@@ -110,4 +108,16 @@ def test_game_is_not_adding_ship_after_game_start(game):
         game: Game object with ships.
     """
     game.start_game()
-    assert not game.player_set_ship([(4, 4)])
+    with pytest.raises(StartedGameError):
+        _ = game.player_set_ship([(4, 4)])
+
+
+def test_game_cannot_start_after_start(game):
+    """
+    Method checks if game raises an error if we try to start game after it already started.
+    Args:
+        game: Game object with ships.
+    """
+    game.start_game()
+    with pytest.raises(StartedGameError):
+        game.start_game()

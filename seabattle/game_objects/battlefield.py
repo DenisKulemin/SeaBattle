@@ -1,7 +1,7 @@
 """Module for creation battlefield."""
 from typing import Tuple, List
 
-from seabattle.game_errors.ship_errors import BaseShipError
+from seabattle.game_errors.ship_errors import ShipError
 from seabattle.game_objects.cell import Cell
 from seabattle.game_objects.ship import Ship
 from seabattle.helpers.constants import SignObjects, AREA_AROUND
@@ -80,11 +80,8 @@ class BattleField:
         """Method checks if battlefield has ship signs."""
         self.is_game_over = not sum(sign.sign == SignObjects.ship_sign.sign for sign in self.battlefield.values())
 
-    def _return_new_ship_from_list(self, number_of_cells: int) -> None:
-        for index, ship in enumerate(self.__new_ships):
-            if ship == number_of_cells:
-                self.__new_ships.pop(index)
-                break
+    def _exclude_new_ship_from_list(self, number_of_cells: int) -> None:
+        self.__new_ships.remove(number_of_cells)
 
     def is_all_ships_added(self) -> bool:
         """Method checks if all ships were added to the battlefield."""
@@ -107,17 +104,17 @@ class BattleField:
 
         ship_len = len(coordinates)
         if ship_len in self.__new_ships:
-            self._return_new_ship_from_list(ship_len)
+            self._exclude_new_ship_from_list(ship_len)
         else:
             raise ExtraShipInFleetError(f"Couldn't add ship with such size: {ship_len}")
 
         try:
             ship = Ship({coordinate: self.battlefield[coordinate] for coordinate in coordinates})
             self.ships.update({ship.id: ship})
-        except BaseShipError as exp:
+        except ShipError as exp:
             print("Couldn't create a ship.")
             print(exp)
-            raise BaseShipError from exp
+            raise ShipError from exp
 
     def shoot(self, coordinate: Tuple[int, int]) -> Tuple[dict[Tuple[int, int], str], bool]:
         """

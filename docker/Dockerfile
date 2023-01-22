@@ -12,3 +12,7 @@ RUN pip install --upgrade pip && pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false && poetry install --no-root --without dev
 
 COPY . .
+
+EXPOSE 8080
+
+CMD ["python", "./seabattle/listener/listener.py"]

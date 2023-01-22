@@ -1,6 +1,7 @@
 """Module with game constants."""
 from copy import deepcopy
 from dataclasses import dataclass
+from enum import Enum
 
 
 @dataclass
@@ -10,12 +11,22 @@ class Sign:
     value: int
 
 
+@dataclass
 class SignObjects:
     """Class contains all possible sings for game."""
     empty_sign = Sign(sign=" ", value=0)
     ship_sign = Sign(sign="0", value=10)
     miss_sign = Sign(sign="*", value=100)
     hit_sign = Sign(sign="X", value=1000)
+
+
+class StatusCode(Enum):
+    """Class contains all useful status codes."""
+    OK = 200
+    BAD_REQUEST = 400
+    VALIDATION_FAILED = 400
+    ENTITY_NOT_FOUND = 404
+    APPLICATION_ERROR = 500
 
 
 DIAG_AROUND = [(-1, -1), (-1, 1), (1, -1), (1, 1)]

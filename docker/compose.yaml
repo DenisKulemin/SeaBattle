@@ -7,3 +7,5 @@ services:
       dockerfile: docker/Dockerfile
     volumes:
       - ./../:/home/seabattle
+    ports:
+      - "8080:8080"
