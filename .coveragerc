@@ -10,6 +10,8 @@ source =
     ./tests
     ./tests/integration_tests
     ./tests/unit_tests
+omit =
+    ./tests/performance_tests/*
 
 [report]
 exclude_lines =

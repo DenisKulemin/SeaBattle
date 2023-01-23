@@ -28,10 +28,9 @@ def test_game_is_not_started():
     game = Game()
     assert not game.is_game_started
 
-    # Start game.
-    game.start_game()
-
-    assert not game.is_game_started
+    with pytest.raises(NotStartedGameError):
+        # Start game.
+        game.start_game()
 
 
 def test_game_is_not_finished(game):

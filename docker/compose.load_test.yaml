@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  master:
+    image: locustio/locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./../tests/performance_tests/:/mnt/locust
+      - ./../tests/configs/:/mnt/locust/configs
+    command: --config=/mnt/locust/configs/locust.conf -H http://seabattle:8080
+    networks:
+      - seabattle
+
+  worker:
+    image: locustio/locust
+    volumes:
+      - ./../tests/performance_tests/:/mnt/locust
+      - ./../tests/configs/:/mnt/locust/configs
+    command: -f /mnt/locust/seabattle_test.py --worker --master-host master
+    networks:
+      - seabattle
+
+networks:
+  seabattle:
+    driver: bridge

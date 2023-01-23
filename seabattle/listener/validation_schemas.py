@@ -58,6 +58,7 @@ class GameStartOutputSchema(OutputSchema):
     """Class for validation '/game-start' output."""
     game_id = ma_fields.UUID(required=True)
     player_id = ma_fields.UUID(required=True)
+    is_player_move = ma_fields.Bool(required=True)
     message = ma_fields.Str(required=True)
 
 
