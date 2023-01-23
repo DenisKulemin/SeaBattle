@@ -52,8 +52,8 @@ def start_game():
     """Method starts a game."""
     player_data = validate_start_game_request(request.json)
     game = validate_game_and_player(player_data)
-    message = game.start_game()
-    response = validate_start_game_response({"message": message, **player_data})
+    response = game.start_game()
+    response = validate_start_game_response({**response, **player_data})
     return response, StatusCode.OK.value
 
 

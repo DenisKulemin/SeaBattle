@@ -103,8 +103,9 @@ def test_start_game_works_correct(application, client):
     json_request = application[1]["ships_added"]
 
     response = client.post(f"{BASE_URL}/game-start", json=json_request)
+    is_player_move = response.json["isPlayerMove"]
 
-    assert response.json == {"message": "Game is started.", **json_request}
+    assert response.json == {"message": "Game is started.", "isPlayerMove": is_player_move, **json_request}
     assert response.status_code == StatusCode.OK.value
 
 
@@ -134,8 +135,8 @@ def test_start_game_game_cannot_be_started(application, client):
 
     response = client.post(f"{BASE_URL}/game-start", json=json_request)
 
-    assert response.json == {"message": "There are not all ships added. Cannot start a game.", **json_request}
-    assert response.status_code == StatusCode.OK.value
+    assert response.json == {"message": "Internal Server Error.", "errorCode": "NotStartedGameError", "statusCode": 500}
+    assert response.status_code == StatusCode.APPLICATION_ERROR.value
 
 
 def test_start_game_game_is_already_started(application, client):

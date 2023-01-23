@@ -197,7 +197,7 @@ class Player:
         for new_coordinate in coordinates_for_update:
             if battlefield.battlefield[new_coordinate].sign == SignObjects.empty_sign.sign:
                 battlefield.battlefield[new_coordinate].sign = SignObjects.miss_sign.sign
-            if 1 <= new_coordinate[0] <= self.player_battlefield.width and \
-                    1 <= new_coordinate[1] <= self.player_battlefield.height:
+            if 1 <= new_coordinate[0] <= self.player_battlefield.width - 1 and \
+                    1 <= new_coordinate[1] <= self.player_battlefield.height - 1:
                 shooting_results.update({new_coordinate: battlefield.battlefield[new_coordinate].sign})
         return shooting_results

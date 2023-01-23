@@ -7,7 +7,7 @@ repos:
       - id: check-docstring-first
       - id: debug-statements
       - id: name-tests-test
-        exclude: ^tests/helpers
+        exclude: ^tests/(helpers|performance_tests)
       - id: no-commit-to-branch
         args: [ -b, main ]
   - repo: https://github.com/pycqa/pylint
@@ -38,5 +38,6 @@ repos:
           - marshmallow
           - flask
           - werkzeug
+          - locust
         args:
           - --explicit-package-bases

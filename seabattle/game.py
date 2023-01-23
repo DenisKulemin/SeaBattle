@@ -39,7 +39,7 @@ class Game:
                         "shooting_results": list(shooting_results.values()),
                         "is_killed": is_killed,
                         "is_player_move": self.is_player_move,
-                        "is_game_over": self.player.is_game_over}
+                        "is_game_over": self.enemy.is_game_over}
             raise NotYourTurnError("Right now is not your turn for shooting.")
         raise NotStartedGameError("Game is not started. Cannot shooting.")
 
@@ -61,7 +61,7 @@ class Game:
                         "shooting_results": list(shooting_results.values()),
                         "is_killed": is_killed,
                         "is_player_move": self.is_player_move,
-                        "is_game_over": self.enemy.is_game_over}
+                        "is_game_over": self.player.is_game_over}
             raise NotYourTurnError("Right now is not your turn for shooting.")
         raise NotStartedGameError("Game is not started. Cannot shooting.")
 
@@ -76,11 +76,11 @@ class Game:
             return f"Ship with coordinates {coordinates} was added."
         raise StartedGameError("Cannot set a ship after game started")
 
-    def start_game(self) -> str:
+    def start_game(self) -> dict:
         """Method starts a game after player's command if there is any ships."""
         if self.is_game_started:
             raise StartedGameError(f"Game with id {self.id} is already started.")
         if self.player.is_all_ships_added() and self.enemy.is_all_ships_added():
             self.is_game_started = True
-            return "Game is started."
-        return "There are not all ships added. Cannot start a game."
+            return {"message": "Game is started.", "is_player_move": self.is_player_move}
+        raise NotStartedGameError("There are not all ships added. Cannot start a game.")
