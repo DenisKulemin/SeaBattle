@@ -1,4 +1,6 @@
 """Module contains general data for pytest (fixtures, etc.)."""
+from copy import deepcopy
+
 import pytest
 
 from seabattle.game import Game
@@ -74,7 +76,16 @@ def app_fixture():
     GAME_STORAGE.update({game.id: game})
     test_info.update({"game_started_player_after_shoot": {"gameId": str(game.id), "playerId": str(game.player.id)}})
 
+    game = Game()
+    game.is_game_over = True
+    GAME_STORAGE.update({game.id: game})
+    test_info.update({"game_is_over": {"gameId": str(game.id), "playerId": str(game.player.id)}})
+
     yield app, test_info
+
+    # Clear GAME_STORAGE after test.
+    for game_id in deepcopy(GAME_STORAGE):
+        GAME_STORAGE.pop(game_id)
 
 
 @pytest.fixture(name="client")

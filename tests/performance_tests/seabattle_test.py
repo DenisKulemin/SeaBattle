@@ -1,6 +1,15 @@
 """Module contains load test for seabattle endpoints."""
+import logging
 import random
 from locust import HttpUser, task, between, events
+
+logger = logging.Logger(__file__)
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s [%(threadName)-10s] [app: seabattle_load_test] "
+                              "%(levelname)-8s - %(filename)s - %(funcName)s - line %(lineno)d - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 SHIPS_COORDINATES = (
     [[10, 1], [10, 2], [10, 3], [10, 4]],
@@ -70,14 +79,14 @@ def _(environment, **kwargs):
     response_time_percentile_time = 600
 
     if environment.stats.total.fail_ratio > fail_ratio:
-        print(f"Test failed due to failure ration > {fail_ratio * 100}%.")
+        logger.error("Test failed due to failure ration > %s %%.", fail_ratio * 100)
         environment.process_exit_code = 1
     elif environment.stats.total.avg_response_time > average_response_time:
-        print(f"Test failed due to average response time > {average_response_time} ms.")
+        logger.error("Test failed due to average response time > %s ms.", average_response_time)
         environment.process_exit_code = 1
     elif environment.stats.total.get_response_time_percentile(percentile) > response_time_percentile_time:
-        print(f"Test failed due to 95th percentile response time > {response_time_percentile_time} ms.")
+        logger.error("Test failed due to 95th percentile response time > %s ms.", response_time_percentile_time)
         environment.process_exit_code = 1
     else:
-        print("TEST SUCCEED.")
+        logger.info("TEST SUCCEED.")
         environment.process_exit_code = 0

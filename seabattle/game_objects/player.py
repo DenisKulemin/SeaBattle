@@ -1,10 +1,12 @@
 """Module contains player class."""
+import logging
 import random
 from typing import Tuple, List, Set, Dict, Optional
 from uuid import uuid4, UUID
 
 from seabattle.game_objects.battlefield import BattleField
 from seabattle.helpers.constants import SignObjects, DIAG_AROUND, AREA_AROUND, HORIZONTAL_AROUND, VERTICAL_AROUND
+from seabattle.helpers.logger import get_logger
 
 
 class Player:
@@ -13,6 +15,7 @@ class Player:
     # pylint: disable=too-many-instance-attributes
 
     id: UUID
+    logger: logging.Logger
     player_battlefield: BattleField
     enemy_battlefield: BattleField
     is_game_over: bool
@@ -21,11 +24,15 @@ class Player:
     demaged_ships_coordinates: list
     is_horizontal: Optional[bool]
 
-    def __init__(self, player_name: str, enemy_name: str):
+    def __init__(self, player_name: str, enemy_name: str, logger: Optional[logging.Logger] = None):
         self.id = uuid4()
+        if logger is None:
+            self.logger = get_logger(self.id, name="seabattle_player")
+        else:
+            self.logger = logger
         self.player_battlefield = BattleField(name=player_name)
         self.enemy_battlefield = BattleField(name=enemy_name, is_visible=False)
-        self.is_game_over = self.player_battlefield.is_game_over or self.enemy_battlefield.is_game_over
+        self.is_game_over = self.player_battlefield.is_game_over
         self.coordinates_for_shooting = [
             (x, y) for x in range(1, self.player_battlefield.width)
             for y in range(1, self.player_battlefield.height)
@@ -41,7 +48,7 @@ class Player:
 
     def _is_game_over(self):
         """Method checks if game for player is over based on its battlefield."""
-        self.is_game_over = self.player_battlefield.is_game_over or self.enemy_battlefield.is_game_over
+        self.is_game_over = self.player_battlefield.is_game_over
 
     def _is_horizontal_ship(self) -> Optional[bool]:
         """Method defines if the demaged ship is horizontal or not."""
