@@ -69,9 +69,9 @@ def test_add_new_ship_validation_failed(client, wrong_request, validation_error_
         ("ships_added", [[1, 2]], "BlockedAreaError"),
         ("ships_added", [[10, 5]], "BlockedAreaAroundError"),
         ("ships_added", [[3, 9]], "ExtraShipInFleetError"),
-        ("just_created", [[3, 9], [2, 10]], "ShipError"),
-        ("just_created", [[3, 8], [3, 10]], "ShipError"),
-        ("just_created", [[3, 8], [4, 9], [3, 10]], "ShipError"),
+        ("just_created", [[3, 9], [2, 10]], "NotParallelShipError"),
+        ("just_created", [[3, 8], [3, 10]], "WrongShipSizeError"),
+        ("just_created", [[3, 8], [4, 9], [3, 10]], "WrongShipCoordinateError"),
     ]
 )
 def test_add_new_ship_cannot_work_correctly(application, client, game_type, coordinates, error):
@@ -416,6 +416,13 @@ def test_validate_game_and_player_validation_failed(application, client):
     assert response.json == {"message": "Internal Server Error.",
                              "errorCode": "NoGamePlayerApiError",
                              "statusCode": 500}
+    assert response.status_code == StatusCode.APPLICATION_ERROR.value
+
+    json_request = application[1]["game_is_over"]
+
+    response = client.post(f"{BASE_URL}/exit", json=json_request)
+
+    assert response.json == {"message": "Internal Server Error.", "errorCode": "GameOverError", "statusCode": 500}
     assert response.status_code == StatusCode.APPLICATION_ERROR.value
 
 

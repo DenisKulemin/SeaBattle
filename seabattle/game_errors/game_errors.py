@@ -15,3 +15,7 @@ class StartedGameError(GameError):
 
 class NotYourTurnError(GameError):
     """Raises if someone shoots when it's not their turn."""
+
+
+class GameOverError(GameError):
+    """Raises if player try to do anything after game is over."""

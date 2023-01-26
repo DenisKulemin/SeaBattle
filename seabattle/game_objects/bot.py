@@ -1,7 +1,8 @@
 """Module contains bot objects."""
+import logging
 import random
 from copy import deepcopy
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 from seabattle.game_objects.player import Player
 from seabattle.helpers.constants import AREA_AROUND
 
@@ -9,8 +10,8 @@ from seabattle.helpers.constants import AREA_AROUND
 class EasyBot(Player):
     """Class contains logic for the simplest bot."""
 
-    def __init__(self, player_name: str, enemy_name: str):
-        super().__init__(player_name, enemy_name)
+    def __init__(self, player_name: str, enemy_name: str, logger: Optional[logging.Logger] = None):
+        super().__init__(player_name, enemy_name, logger)
         self._fill_bot_battlefield()
 
     @staticmethod
@@ -37,7 +38,7 @@ class EasyBot(Player):
     @staticmethod
     def _clear_not_empty_coordinates(coordinates: List[Tuple[int, int]], empty_cells: dict):
         """
-        Method clear the dictionary with empty cells.
+        Method clears not empty cells from the dictionary with empty cells.
         Args:
             coordinates: Ship coordinates.
             empty_cells: Dictionary with coordinates of empty cells for bot battlefield.
@@ -47,8 +48,10 @@ class EasyBot(Player):
 
     def _fill_bot_battlefield(self):
         """Method creates the full flotilla of ships for bot battlefield with random coordinates."""
+        self.logger.info("Start adding ships for bot flotilla.")
         empty_cells = {key: 1 for key in self.coordinates_for_shooting}
         for ship_len in deepcopy(self.player_battlefield.create_initial_ships()):
             coordinates = self._create_bot_ship_coordinates(ship_len, empty_cells)
             self.player_battlefield.set_ship_coordinates(coordinates)
             self._clear_not_empty_coordinates(coordinates, empty_cells)
+        self.logger.info("End adding ships for bot flotilla.")

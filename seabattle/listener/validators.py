@@ -4,6 +4,7 @@ from uuid import UUID
 
 from seabattle.game import Game
 from seabattle.game_errors.api_errors import NoGameApiError, NoGamePlayerApiError
+from seabattle.game_errors.game_errors import GameOverError
 from seabattle.listener.validation_schemas import CreateNewGameOutputSchema, GameStartInputSchema, \
     GameStartOutputSchema, CreateNewShipInputSchema, CreateNewShipOutputSchema, PlayerShootInputSchema, \
     PlayerShootOutputSchema, EnemyShootInputSchema, EnemyShootOutputSchema
@@ -155,5 +156,8 @@ def validate_game_and_player(player_data: dict) -> Game:
     player_id = player_data["player_id"]
     if player_id != game.player.id:
         raise NoGamePlayerApiError(f"Game with id {game_id} doesn't have player with id {player_id}")
+
+    if game.is_game_over:
+        raise GameOverError(f"Game with id {game_id} is already over.")
 
     return game
