@@ -406,12 +406,12 @@ def test_validate_game_and_player_validation_failed(application, client):
         client: Fixture with flash client to make a request.
     """
     json_request = application[1]["just_created"]
-    response = client.post(f"{BASE_URL}/exit", json={**json_request, "gameId": uuid.uuid4()})
+    response = client.post(f"{BASE_URL}/game-start", json={**json_request, "gameId": uuid.uuid4()})
 
     assert response.json == {"message": "Internal Server Error.", "errorCode": "NoGameApiError", "statusCode": 500}
     assert response.status_code == StatusCode.APPLICATION_ERROR.value
 
-    response = client.post(f"{BASE_URL}/exit", json={**json_request, "playerId": uuid.uuid4()})
+    response = client.post(f"{BASE_URL}/game-start", json={**json_request, "playerId": uuid.uuid4()})
 
     assert response.json == {"message": "Internal Server Error.",
                              "errorCode": "NoGamePlayerApiError",
@@ -420,7 +420,7 @@ def test_validate_game_and_player_validation_failed(application, client):
 
     json_request = application[1]["game_is_over"]
 
-    response = client.post(f"{BASE_URL}/exit", json=json_request)
+    response = client.post(f"{BASE_URL}/game-start", json=json_request)
 
     assert response.json == {"message": "Internal Server Error.", "errorCode": "GameOverError", "statusCode": 500}
     assert response.status_code == StatusCode.APPLICATION_ERROR.value
