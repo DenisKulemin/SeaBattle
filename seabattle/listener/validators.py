@@ -138,11 +138,12 @@ def validate_enemy_shoot_response(data: dict) -> dict:
     return validator.dump(validator.load(data))
 
 
-def validate_game_and_player(player_data: dict) -> Game:
+def validate_game_and_player(player_data: dict, exit_mark: bool = False) -> Game:
     """
     Method validates that request contains game id and player id, that contains real game and player in game storage.
     Args:
         player_data: Request to endpoint.
+        exit_mark: Boolean mark if we get the game for exit. It allows to ignore game.is_game_over check.
 
     Returns:
         Game: game object.
@@ -157,7 +158,7 @@ def validate_game_and_player(player_data: dict) -> Game:
     if player_id != game.player.id:
         raise NoGamePlayerApiError(f"Game with id {game_id} doesn't have player with id {player_id}")
 
-    if game.is_game_over:
+    if game.is_game_over and not exit_mark:
         raise GameOverError(f"Game with id {game_id} is already over.")
 
     return game

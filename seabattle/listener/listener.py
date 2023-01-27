@@ -104,7 +104,7 @@ def exit_game():
     """Method deletes the game."""
     # Use the same validation as for start game.
     player_data = validate_start_game_request(request.json)
-    game = validate_game_and_player(player_data)
+    game = validate_game_and_player(player_data, True)
     API_LOGGER.info(f"Try to exit game with id {game.id}.")
     GAME_STORAGE.pop(game.id)
     response = validate_create_new_game_response(
