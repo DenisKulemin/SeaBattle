@@ -49,3 +49,9 @@ SHIPS_COORDINATES = (
     [(6, 5)],
     [(6, 7)]
 )
+
+
+SWAGGER_URL = "/swagger"
+API_URL = "/apidocs"
+API_NAME = "Seabattle API"
+API_VERSION = "1.0.0"
