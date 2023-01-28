@@ -39,5 +39,8 @@ repos:
           - flask
           - werkzeug
           - locust
+          - apispec
+          - apispec_webframeworks
+          - flask_swagger_ui
         args:
           - --explicit-package-bases

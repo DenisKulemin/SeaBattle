@@ -440,3 +440,23 @@ def test_wrong_endpoint(client):
         "statusCode": 404
     }
     assert response.status_code == StatusCode.ENTITY_NOT_FOUND.value
+
+
+def test_api_swagger_endpoint(client):
+    """
+    Method tests availability of swagger endpoint.
+    Args:
+        client: Fixture with flash client to make a request.
+    """
+    response = client.get(f"{BASE_URL}/swagger/")
+    assert response.status_code == StatusCode.OK.value
+
+
+def test_raw_api_endpoint(client):
+    """
+    Method tests availability of raw apispec documentation endpoint.
+    Args:
+        client: Fixture with flash client to make a request.
+    """
+    response = client.get(f"{BASE_URL}/apidocs")
+    assert response.status_code == StatusCode.OK.value

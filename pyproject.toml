@@ -13,6 +13,9 @@ locust = "^2.13.0"
 coverage = "^7.0.3"
 marshmallow = "^3.19.0"
 inflection = "^0.5.1"
+apispec = "^6.0.2"
+apispec-webframeworks = "^0.5.2"
+flask-swagger-ui = "^4.11.1"
 
 [build-system]
 requires = ["poetry-core"]

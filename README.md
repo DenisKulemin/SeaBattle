@@ -7,6 +7,7 @@
   - [2.2 Check coverage](#22-check-coverage)
   - [2.3 Running performance tests](#23-running-performance-tests)
 - [3. Code style checker](#3-code-style-checker)
+- [4. API spec](#4-api-spec)
 
 ## 1. Running application locally
 
@@ -204,3 +205,12 @@ pre-commit run --files <files>
 Pre-commit will run automatically every time when you use **git commit** command
 (for all added in commit files).
 If you need to commit something despite the pre-commit check, use **-n** option (**--no-verify**)
+
+
+## 4. API spec
+
+To get API spec for all endpoints, run container and make a GET request to:
+- http://localhost:8080/swagger - to get the API endpoint with Swagger API documentation.
+
+OR:
+- http://localhost:8080/apidocs - to get raw API endpoint specification in JSON format.

@@ -1,6 +1,6 @@
 """Module contains validation schemas for checking api input ana output data."""
 import inflection
-from marshmallow import Schema, fields as ma_fields, post_dump, validate
+from marshmallow import Schema, fields as ma_fields, validate, pre_load
 
 
 def camelaze(param):
@@ -10,7 +10,9 @@ def camelaze(param):
 
 class InputSchema(Schema):
     """
-    Class validation schema, that use snake case names for internal work and camel case for external.
+    Class validation schema, that use snake case names for internal work and camel case for external
+    (load camel case names and turn into snake case for further processing in game).
+    After validation returns SNAKE case keys.
     Used for validation input data in requests.
     """
 
@@ -19,13 +21,15 @@ class InputSchema(Schema):
         field_obj.data_key = camelaze(field_obj.data_key or field_name)
 
 
-class OutputSchema(Schema):
+class OutputSchema(InputSchema):
     """
-    Class validation schema, that use snake case names for internal work but returns camel case names after dump.
+    Class validation schema, that use snake case names for internal work and camel case for external
+    (load snake case names and turn into camel case for returning the client).
+    After validation returns CAMEL case keys.
     Used for validation output data in requests.
     """
 
-    @post_dump
+    @pre_load
     def camelize_keys(self, in_data: dict, **kwargs) -> dict:
         # pylint: disable=unused-argument
         # **kwargs needed for correct work post_dump decorator.
