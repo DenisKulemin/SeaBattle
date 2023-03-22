@@ -5,16 +5,21 @@ from flask import Flask, request
 from flask_swagger_ui import get_swaggerui_blueprint  # type: ignore
 from marshmallow import ValidationError
 from seabattle.game import Game
-from seabattle.helpers.constants import StatusCode, SignObjects, SWAGGER_URL, API_URL, API_NAME, API_VERSION
+from seabattle.helpers.constants import StatusCode, SWAGGER_URL, API_URL, API_NAME, API_VERSION
 from seabattle.helpers.logger import API_LOGGER
 from seabattle.listener import config
 from seabattle.listener.api_error_handlers import handle_validation_error, handle_application_error, handle_api_error
 from seabattle.listener.apispec_generator import get_apispec
-from seabattle.listener.validators import GAME_STORAGE, validate_game_and_player, validate_create_new_game_response, \
-    validate_start_game_response, validate_start_game_request, validate_create_new_ship_request, \
-    validate_create_new_ship_response, validate_player_shoot_request, validate_player_shoot_response, \
-    validate_enemy_shoot_request, validate_enemy_shoot_response
-
+from seabattle.listener.validators import (
+    GAME_STORAGE,
+    validate_game_and_player,
+    validate_create_game_info_response,
+    validate_start_game_request,
+    validate_create_new_ship_request,
+    validate_create_new_ship_response,
+    validate_player_shoot_request,
+    validate_enemy_shoot_request
+)
 
 app = Flask(__name__)
 app.register_error_handler(Exception, handle_application_error)
@@ -22,7 +27,6 @@ app.register_error_handler(ValidationError, handle_validation_error)
 app.register_error_handler(StatusCode.BAD_REQUEST.value, handle_api_error)
 app.register_error_handler(StatusCode.ENTITY_NOT_FOUND.value, handle_api_error)
 app.config.from_object(getattr(config, os.environ.get("SEABATTLE_SETTINGS", "DevConfig")))
-
 
 swagger_ui_blueprint = get_swaggerui_blueprint(
     base_url=SWAGGER_URL,
@@ -64,9 +68,7 @@ def create_new_game():
     game = Game()
     API_LOGGER.info(f"Create game with id: {game.id}")
     GAME_STORAGE.update({game.id: game})
-    response = validate_create_new_game_response(
-        {"message": "Game created.", "game_id": game.id, "player_id": game.player.id}
-    )
+    response = validate_create_game_info_response(game.return_game_state())
     return response, StatusCode.OK.value
 
 
@@ -94,10 +96,10 @@ def add_new_ship():
     player_data = validate_create_new_ship_request(request.json)
     game = validate_game_and_player(player_data)
     API_LOGGER.info(f"Try to add ship with coordinates: {player_data['coordinates']} to game with id {game.id}.")
-    message = game.player_set_ship(player_data["coordinates"])
-    response = validate_create_new_ship_response({"message": message, **player_data})
-    API_LOGGER.info(f"Successfully added ship with coordinates: {player_data['coordinates']}"
-                    f" to game with id {game.id}.")
+    coordinates = player_data.pop("coordinates")
+    player_ship_cells = game.player_set_ship(coordinates)
+    response = validate_create_new_ship_response({**player_ship_cells, **player_data})
+    API_LOGGER.info(f"Successfully added ship with coordinates: {coordinates} to game with id {game.id}.")
     return response, StatusCode.OK.value
 
 
@@ -126,7 +128,7 @@ def start_game():
     game = validate_game_and_player(player_data)
     API_LOGGER.info(f"Try to start game with id {game.id}.")
     response = game.start_game()
-    response = validate_start_game_response({**response, **player_data})
+    response = validate_create_game_info_response({**response})
     API_LOGGER.info(f"Game with id {game.id} is started.")
     return response, StatusCode.OK.value
 
@@ -156,9 +158,7 @@ def player_shoot():
     game = validate_game_and_player(player_data)
     API_LOGGER.info(f"Player is trying to shoot on coordinate {player_data['coordinate']} in game with id {game.id}.")
     result = game.player_shoot(player_data["coordinate"])
-    response = validate_player_shoot_response(
-        {**result, "game_id": player_data["game_id"], "player_id": player_data["player_id"]}
-    )
+    response = validate_create_game_info_response({**result})
     API_LOGGER.info(f"Player doesn't have any problems with shooting on coordinate {player_data['coordinate']} "
                     f"in game with id {game.id}.")
 
@@ -190,14 +190,8 @@ def enemy_shoot():
     game = validate_game_and_player(player_data)
     API_LOGGER.info(f"Enemy is trying to shoot in game with id {game.id}.")
     result = game.enemy_shoot()
-    response = validate_enemy_shoot_response({**result, **player_data})
-    if len(response["coordinates"]) == 1:
-        shooting_coordinate = response["coordinates"]
-    else:
-        shooting_coordinate = response["coordinates"][response["shootingResults"].index(SignObjects.hit_sign.sign)]
-
-    API_LOGGER.info(f"Enemy doesn't have any problems with shooting on coordinate {shooting_coordinate} "
-                    f"in game with id {game.id}.")
+    response = validate_create_game_info_response({**result})
+    API_LOGGER.info(f"Enemy doesn't have any problems with shooting in game with id {game.id}.")
 
     return response, StatusCode.OK.value
 
@@ -228,11 +222,8 @@ def exit_game():
     game = validate_game_and_player(player_data, True)
     API_LOGGER.info(f"Try to exit game with id {game.id}.")
     GAME_STORAGE.pop(game.id)
-    response = validate_create_new_game_response(
-        {"message": f"Game with id {game.id} is over.", "game_id": game.id, "player_id": game.player.id}
-    )
     API_LOGGER.info(f"Game with id {game.id} is stopped and deleted.")
-    return response, StatusCode.OK.value
+    return {}, StatusCode.OK.value
 
 
 @app.route("/apidocs", methods=["GET"])
@@ -243,7 +234,6 @@ def create_swagger_spec():
 
 
 app.register_blueprint(swagger_ui_blueprint)
-
 
 if __name__ == "__main__":
     app.run(

@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
+from seabattle.game_objects.cell import Cell
 from seabattle.game_objects.player import Player
 from seabattle.helpers.constants import SignObjects
 
@@ -85,10 +86,10 @@ def test_player_repr(player):
 
 @pytest.mark.parametrize(
     ("shooting_results", "is_killed"), [
-        ({(1, 1): SignObjects.hit_sign.sign, (1, 2): SignObjects.miss_sign.sign}, True),
-        ({(1, 1): SignObjects.hit_sign.sign, (1, 2): SignObjects.miss_sign.sign}, False),
-        ({(1, 1): SignObjects.miss_sign.sign}, True),
-        ({(1, 1): SignObjects.miss_sign.sign}, False)
+        ({(1, 1): Cell(1, 1, SignObjects.hit_sign.sign), (1, 2): Cell(1, 2, SignObjects.miss_sign.sign)}, True),
+        ({(1, 1): Cell(1, 1, SignObjects.hit_sign.sign), (1, 2): Cell(1, 2, SignObjects.miss_sign.sign)}, False),
+        ({(1, 1): Cell(1, 1, SignObjects.miss_sign.sign)}, True),
+        ({(1, 1): Cell(1, 1, SignObjects.miss_sign.sign)}, False)
     ]
 )
 @patch("seabattle.game_objects.player.Player.define_top_target_coordinates")
@@ -113,9 +114,9 @@ def test_shoot(clear_func, define_func, player, shooting_results, is_killed):
         assert player.enemy_battlefield.battlefield[coordinate].sign == SignObjects.empty_sign.sign
     player.shoot(shooting_results, is_killed)
     # Check that all cells from shooting_results were updated.
-    for coordinate, sign in shooting_results.items():
-        assert player.enemy_battlefield.battlefield[coordinate].sign == sign
-        if sign == SignObjects.hit_sign.sign:
+    for coordinate, cell in shooting_results.items():
+        assert player.enemy_battlefield.battlefield[coordinate] == cell
+        if cell.sign == SignObjects.hit_sign.sign:
             assert player.demaged_ships_coordinates == [coordinate]
 
 
