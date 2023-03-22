@@ -5,6 +5,7 @@ from typing import Tuple, List, Set, Dict, Optional
 from uuid import uuid4, UUID
 
 from seabattle.game_objects.battlefield import BattleField
+from seabattle.game_objects.cell import Cell
 from seabattle.helpers.constants import SignObjects, DIAG_AROUND, AREA_AROUND, HORIZONTAL_AROUND, VERTICAL_AROUND
 from seabattle.helpers.logger import get_logger
 
@@ -51,13 +52,13 @@ class Player:
         self.is_game_over = self.player_battlefield.is_game_over
 
     def _is_horizontal_ship(self) -> Optional[bool]:
-        """Method defines if the demaged ship is horizontal or not."""
+        """Method defines if the damaged ship is horizontal or not."""
         if len(self.demaged_ships_coordinates) > 1:
-            # Check if all x coordinate in demaged_ships_coordinates are the same.
+            # Check if all x coordinate in damaged_ships_coordinates are the same.
             return bool(len({coordinate[0] for coordinate in self.demaged_ships_coordinates}) - 1)
         return None
 
-    def shoot(self, shooting_results: Dict[Tuple[int, int], str], is_killed: bool):
+    def shoot(self, shooting_results: Dict[Tuple[int, int], Cell], is_killed: bool):
         """
         Method runs shoot command on enemy battlefield.
         Args:
@@ -66,13 +67,13 @@ class Player:
             is_killed: Bool mark, that informs if the ship is sunk.
         """
         for coordinate, shooting_result in shooting_results.items():
-            self.enemy_battlefield.battlefield[coordinate].sign = shooting_result
-            if shooting_result == SignObjects.hit_sign.sign:
+            self.enemy_battlefield.battlefield[coordinate].sign = shooting_result.sign
+            if shooting_result.sign == SignObjects.hit_sign.sign:
                 self.demaged_ships_coordinates.append(coordinate)
                 self.define_top_target_coordinates(coordinate, is_killed)
         self.clear_coordinates_for_shooting(list(shooting_results.keys()))
 
-    def enemy_shooting(self, coordinate: Tuple[int, int]) -> Tuple[Dict[Tuple[int, int], str], bool]:
+    def enemy_shooting(self, coordinate: Tuple[int, int]) -> Tuple[Dict[Tuple[int, int], Cell], bool]:
         """
         Method runs shoot command on player battlefield.
         Args:
@@ -81,18 +82,21 @@ class Player:
             str: New sign after shooting for coordinate.
         """
         shooting_results, is_killed = self.player_battlefield.shoot(coordinate)
-        if shooting_results[coordinate] == SignObjects.hit_sign.sign:
+        if shooting_results[coordinate].sign == SignObjects.hit_sign.sign:
             shooting_results = self.set_sings_for_lucky_shoot(self.player_battlefield, coordinate, is_killed)
         self._is_game_over()
         return shooting_results, is_killed
 
-    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:
+    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> Dict[Tuple[int, int], Cell]:
         """
         Method sets ship signs with specified coordinates on player battlefield.
         Args:
             coordinates: List of coordinates.
+
+        Returns:
+            Dictionary with coordinates as keys and ship sign as values.
         """
-        self.player_battlefield.set_ship_coordinates(coordinates)
+        return self.player_battlefield.set_ship_coordinates(coordinates)
 
     def is_all_ships_added(self) -> bool:
         """Method check if all ships added to the battlefield."""
@@ -188,7 +192,7 @@ class Player:
 
     def set_sings_for_lucky_shoot(self, battlefield: BattleField,
                                   coordinate: Tuple[int, int],
-                                  is_killed: bool) -> Dict[Tuple[int, int], str]:
+                                  is_killed: bool) -> Dict[Tuple[int, int], Cell]:
         """
         Method updates cell sings on battlefield after successful shooting.
         Args:
@@ -197,7 +201,7 @@ class Player:
             is_killed: Boolean mark. True, if ship was sunk.
 
         Returns:
-            dict: Dict of coordinates for cells on battlefield as keys, and new signs as values.
+            dict: Dict of coordinates for cells on battlefield as keys, and updated cells as values.
         """
         coordinates_for_update = self.get_coordinates_for_update(battlefield, coordinate, is_killed)
         shooting_results = {}
@@ -206,5 +210,5 @@ class Player:
                 battlefield.battlefield[new_coordinate].sign = SignObjects.miss_sign.sign
             if 1 <= new_coordinate[0] <= self.player_battlefield.width - 1 and \
                     1 <= new_coordinate[1] <= self.player_battlefield.height - 1:
-                shooting_results.update({new_coordinate: battlefield.battlefield[new_coordinate].sign})
+                shooting_results.update({new_coordinate: battlefield.battlefield[new_coordinate]})
         return shooting_results

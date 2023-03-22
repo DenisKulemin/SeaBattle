@@ -1,9 +1,9 @@
 """Module for creation battlefield."""
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 
 from seabattle.game_objects.cell import Cell
 from seabattle.game_objects.ship import Ship
-from seabattle.helpers.constants import SignObjects, AREA_AROUND
+from seabattle.helpers.constants import SignObjects, AREA_AROUND, SHIP_NAMES, DEFAULT_BATTLEFIELD_END_COORD
 from seabattle.game_errors.battlefield_errors import BlockedAreaError, BlockedAreaAroundError, ShotCellEarlierError, \
     AreaOutsideBattleFieldError, CellNotExistError, ExtraShipInFleetError
 
@@ -13,12 +13,18 @@ class BattleField:
 
     # pylint: disable=too-many-instance-attributes
 
-    def __init__(self, name: str, width: int = 11, height: int = 11, is_visible: bool = True):
+    def __init__(
+            self,
+            name: str,
+            width: int = DEFAULT_BATTLEFIELD_END_COORD,
+            height: int = DEFAULT_BATTLEFIELD_END_COORD,
+            is_visible: bool = True
+    ):
 
         self.name = name
         self.width = width
         self.height = height
-        self.battlefield = {(x, y): Cell(x=x, y=y) for x in range(self.width + 1) for y in range(self.height + 1)}
+        self.battlefield = {(x, y): Cell(x=x, y=y) for y in range(self.height + 1) for x in range(self.width + 1)}
         self.__new_ships: list = self.create_initial_ships()
         self.ships: dict = {}
         self.is_game_over = False
@@ -86,11 +92,14 @@ class BattleField:
         """Method checks if all ships were added to the battlefield."""
         return not self.__new_ships
 
-    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> None:
+    def set_ship_coordinates(self, coordinates: List[Tuple[int, int]]) -> Dict[Tuple[int, int], Cell]:
         """
         Method sets ship signs with specified coordinates.
         Args:
             coordinates: List of coordinates.
+
+        Returns:
+            Dictionary with coordinates as keys and cell as values.
         """
 
         if not self._check_cell_coordinates(coordinates):
@@ -103,20 +112,21 @@ class BattleField:
 
         ship_len = len(coordinates)
         if ship_len in self.__new_ships:
+            ship = Ship({coordinate: self.battlefield[coordinate] for coordinate in coordinates})
             self._exclude_new_ship_from_list(ship_len)
         else:
             raise ExtraShipInFleetError(f"Couldn't add ship with such size: {ship_len}")
 
-        ship = Ship({coordinate: self.battlefield[coordinate] for coordinate in coordinates})
         self.ships.update({ship.id: ship})
+        return ship.ship
 
-    def shoot(self, coordinate: Tuple[int, int]) -> Tuple[dict[Tuple[int, int], str], bool]:
+    def shoot(self, coordinate: Tuple[int, int]) -> Tuple[dict[Tuple[int, int], Cell], bool]:
         """
         Method contains logic for shooting and changing marks on battlefield.
         Args:
             coordinate: Coordinate for shooting.
         Returns:
-            str: New sign after shooting for coordinate and bool value if the ship was killed.
+            str: Updated cells after shooting for coordinate and bool value if the ship was killed.
         """
         x, y = coordinate
         if self.battlefield.get(coordinate) is None:
@@ -138,4 +148,27 @@ class BattleField:
             is_killed = not self.ships[ship_id].is_ship_alive()
 
         self._game_is_over()
-        return {coordinate: self.battlefield[coordinate].sign}, is_killed
+        return {coordinate: self.battlefield[coordinate]}, is_killed
+
+    def get_fleet_structure(self) -> Dict[str, int]:
+        """
+        Method collects information about alive ships in the fleet.
+
+        Returns:
+            Dictionary with ship name as key and number of such ships that still alive.
+        """
+        fleet_structure = {ship_name: 0 for ship_name in SHIP_NAMES.values()}
+        for ship in self.ships.values():
+            fleet_structure[SHIP_NAMES[len(ship.ship)]] += ship.is_alive
+
+        return fleet_structure
+
+    def get_battlefield(self) -> Dict[Tuple[int, int], Cell]:
+        """
+        Method filters battlefield coordinates (returns only cells that end user should see).
+
+        Returns:
+            Dictionary with tuple coordinates as key and cell as value.
+        """
+        return {coord: cell for coord, cell in self.battlefield.items()
+                if (1 <= coord[0] < self.width and 1 <= coord[1] < self.height)}

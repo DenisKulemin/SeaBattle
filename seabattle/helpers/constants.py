@@ -51,6 +51,20 @@ SHIPS_COORDINATES = (
 )
 
 
+SHIP_NAMES = {
+    1: "patrol_boat",
+    2: "submarine",
+    3: "destroyer",
+    4: "battleship"
+}
+
+
+DEFAULT_BATTLEFIELD_SIZE = 10
+DEFAULT_BATTLEFIELD_BEGINNING_COORD = 0
+DEFAULT_BATTLEFIELD_END_COORD = DEFAULT_BATTLEFIELD_SIZE + 1
+FRONT_Y_COORDINATE = "abcdefghij"
+
+
 SWAGGER_URL = "/swagger"
 API_URL = "/apidocs"
 API_NAME = "Seabattle API"

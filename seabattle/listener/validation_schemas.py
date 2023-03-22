@@ -45,31 +45,42 @@ class OutputSchema(InputSchema):
         return {camelaze(key): value for key, value in in_data.items()}
 
 
-class CreateNewGameOutputSchema(OutputSchema):
-    """Class for validation '/new-game' response."""
+class CellSchema(OutputSchema):
+    """Class for validation coordinates and cell sings in responses."""
+    x = ma_fields.Int(required=True, validate=validate.Range(min=1, max=10, min_inclusive=True, max_inclusive=True))
+    y = ma_fields.Int(required=True, validate=validate.Range(min=1, max=10, min_inclusive=True, max_inclusive=True))
+    sign = ma_fields.Str(required=True)
+
+
+class FleetStructureSchema(OutputSchema):
+    """Class for validation fleet structure response."""
+    patrol_boat = ma_fields.Int(required=True,
+                                validate=validate.Range(min=0, max=4, min_inclusive=True, max_inclusive=True))
+    submarine = ma_fields.Int(required=True,
+                              validate=validate.Range(min=0, max=3, min_inclusive=True, max_inclusive=True))
+    destroyer = ma_fields.Int(required=True,
+                              validate=validate.Range(min=0, max=2, min_inclusive=True, max_inclusive=True))
+    battleship = ma_fields.Int(required=True,
+                               validate=validate.Range(min=0, max=1, min_inclusive=True, max_inclusive=True))
+
+
+class CreateGameInfoOutputSchema(OutputSchema):
+    """Class for validation responses with game information."""
     game_id = ma_fields.UUID(required=True)
     player_id = ma_fields.UUID(required=True)
-    message = ma_fields.Str(required=True)
+    is_player_move = ma_fields.Bool(required=True)
+    is_game_over = ma_fields.Bool(required=True)
+    player_battle_field_cells = ma_fields.Nested(CellSchema(many=True), required=True)
+    player_fleet = ma_fields.Nested(FleetStructureSchema(), required=True)
+    enemy_battle_field_cells = ma_fields.Nested(CellSchema(many=True), required=True)
+    enemy_fleet = ma_fields.Nested(FleetStructureSchema(), required=True)
+    winner = ma_fields.Str(required=True)
 
 
 class GameStartInputSchema(InputSchema):
     """Class for validation '/game-start' input."""
     game_id = ma_fields.UUID(required=True)
     player_id = ma_fields.UUID(required=True)
-
-
-class GameStartOutputSchema(OutputSchema):
-    """Class for validation '/game-start' output."""
-    game_id = ma_fields.UUID(required=True)
-    player_id = ma_fields.UUID(required=True)
-    is_player_move = ma_fields.Bool(required=True)
-    message = ma_fields.Str(required=True)
-
-
-class CoordinateSchema(Schema):
-    """Class for validation pair of coordinates."""
-    x = ma_fields.Int(required=True, validate=validate.Range(min=1, max=10))
-    y = ma_fields.Int(required=True, validate=validate.Range(min=1, max=10))
 
 
 class CreateNewShipInputSchema(InputSchema):
@@ -89,11 +100,8 @@ class CreateNewShipOutputSchema(OutputSchema):
     """Class for validation '/new-ship' output."""
     game_id = ma_fields.UUID(required=True)
     player_id = ma_fields.UUID(required=True)
-    coordinates = ma_fields.List(
-        ma_fields.List(ma_fields.Int(required=True, validate=validate.Range(min=1, max=10)), required=True),
-        required=True
-    )
-    message = ma_fields.Str(required=True)
+    player_ship_cells = ma_fields.Nested(CellSchema(many=True), required=True)
+    player_fleet = ma_fields.Nested(FleetStructureSchema(), required=True)
 
 
 class PlayerShootInputSchema(InputSchema):
@@ -107,35 +115,7 @@ class PlayerShootInputSchema(InputSchema):
     )
 
 
-class PlayerShootOutputSchema(OutputSchema):
-    """Class for validation '/player-shoot' output."""
-    game_id = ma_fields.UUID(required=True)
-    player_id = ma_fields.UUID(required=True)
-    coordinates = ma_fields.List(
-        ma_fields.List(ma_fields.Int(required=True, validate=validate.Range(min=1, max=10)), required=True),
-        required=True
-    )
-    shooting_results = ma_fields.List(ma_fields.Str(required=True), required=True)
-    is_killed = ma_fields.Bool(required=True)
-    is_player_move = ma_fields.Bool(required=True)
-    is_game_over = ma_fields.Bool(required=True)
-
-
 class EnemyShootInputSchema(InputSchema):
     """Class for validation '/enemy-shoot' input."""
     game_id = ma_fields.UUID(required=True)
     player_id = ma_fields.UUID(required=True)
-
-
-class EnemyShootOutputSchema(OutputSchema):
-    """Class for validation '/enemy-shoot' output."""
-    game_id = ma_fields.UUID(required=True)
-    player_id = ma_fields.UUID(required=True)
-    coordinates = ma_fields.List(
-        ma_fields.List(ma_fields.Int(required=True, validate=validate.Range(min=1, max=10)), required=True),
-        required=True
-    )
-    shooting_results = ma_fields.List(ma_fields.Str(required=True), required=True)
-    is_killed = ma_fields.Bool(required=True)
-    is_player_move = ma_fields.Bool(required=True)
-    is_game_over = ma_fields.Bool(required=True)

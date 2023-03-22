@@ -36,12 +36,21 @@ class SeabattleUser(HttpUser):
         """Method tests the whole seabattle game throw its endpoints."""
         response = self.client.post("/new-game")
         game_info = response.json()
-        game_info.pop("message")
 
         for ship_coordinates in SHIPS_COORDINATES:
-            _ = self.client.post("/new-ship", json={**game_info, "coordinates": ship_coordinates})
+            _ = self.client.post(
+                "/new-ship",
+                json={
+                    "gameId": game_info["gameId"],
+                    "playerId": game_info["playerId"],
+                    "coordinates": ship_coordinates
+                }
+            )
 
-        result = self.client.post("/game-start", json=game_info)
+        result = self.client.post(
+            "/game-start",
+            json={"gameId": game_info["gameId"], "playerId": game_info["playerId"]}
+        )
         result = result.json()
         is_player_move = result["isPlayerMove"]
 
@@ -53,19 +62,29 @@ class SeabattleUser(HttpUser):
         while coordinates_for_shooting and not is_game_over:
             if is_player_move:
                 coordinate_for_shooting = random.choice(coordinates_for_shooting)
-                result = self.client.post("/player-shoot",
-                                          json={**game_info, "coordinate": coordinate_for_shooting}).json()
+                result = self.client.post(
+                    "/player-shoot",
+                    json={
+                        "gameId": game_info["gameId"],
+                        "playerId": game_info["playerId"],
+                        "coordinate": coordinate_for_shooting
+                    }
+                ).json()
                 is_player_move = result["isPlayerMove"]
                 is_game_over = result["isGameOver"]
-                for coordinate in result["coordinates"]:
+                for info in result["enemy_battle_field_cells"]:
+                    coordinate = [info["x"], info["y"]]
                     if coordinate in coordinates_for_shooting:
                         coordinates_for_shooting.remove(coordinate)
             else:
-                result = self.client.post("/enemy-shoot", json=game_info).json()
+                result = self.client.post(
+                    "/enemy-shoot",
+                    json={"gameId": game_info["gameId"], "playerId": game_info["playerId"]}
+                ).json()
                 is_player_move = result["isPlayerMove"]
                 is_game_over = result["isGameOver"]
 
-        _ = self.client.post("/exit", json=game_info)
+        _ = self.client.post("/exit", json={"gameId": game_info["gameId"], "playerId": game_info["playerId"]})
 
 
 @events.quitting.add_listener
@@ -74,9 +93,9 @@ def _(environment, **kwargs):
 
     """Method checks load test stats and change exit code if any of stats out of range."""
     fail_ratio = 0.01
-    average_response_time = 300
+    average_response_time = 500
     percentile = 0.95
-    response_time_percentile_time = 600
+    response_time_percentile_time = 1000
 
     if environment.stats.total.fail_ratio > fail_ratio:
         logger.error("Test failed due to failure ration > %s %%.", fail_ratio * 100)

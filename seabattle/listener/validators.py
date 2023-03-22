@@ -5,23 +5,28 @@ from uuid import UUID
 from seabattle.game import Game
 from seabattle.game_errors.api_errors import NoGameApiError, NoGamePlayerApiError
 from seabattle.game_errors.game_errors import GameOverError
-from seabattle.listener.validation_schemas import CreateNewGameOutputSchema, GameStartInputSchema, \
-    GameStartOutputSchema, CreateNewShipInputSchema, CreateNewShipOutputSchema, PlayerShootInputSchema, \
-    PlayerShootOutputSchema, EnemyShootInputSchema, EnemyShootOutputSchema
+from seabattle.listener.validation_schemas import (
+    CreateGameInfoOutputSchema,
+    GameStartInputSchema,
+    CreateNewShipInputSchema,
+    CreateNewShipOutputSchema,
+    PlayerShootInputSchema,
+    EnemyShootInputSchema,
+)
 
 GAME_STORAGE: Dict[UUID, Game] = {}
 
 
-def validate_create_new_game_response(data: dict) -> dict:
+def validate_create_game_info_response(data: dict) -> dict:
     """
-    Method validates response for '/new-game' endpoint.
+    Method validates response for several endpoints that return full game information.
     Args:
         data: Response from endpoint.
 
     Returns:
         dict: Validated response data from endpoint.
     """
-    validator = CreateNewGameOutputSchema()
+    validator = CreateGameInfoOutputSchema()
     # Validate response and dump it (make camel case keys).
     return validator.dump(validator.load(data))
 
@@ -38,20 +43,6 @@ def validate_start_game_request(data: dict) -> dict:
     validator = GameStartInputSchema()
     # Validate request and load it (make snake case keys).
     return validator.load(data)
-
-
-def validate_start_game_response(data: dict) -> dict:
-    """
-    Method validates response for '/game-start' endpoint.
-    Args:
-        data: Response from endpoint.
-
-    Returns:
-        dict: Validated response data from endpoint.
-    """
-    validator = GameStartOutputSchema()
-    # Validate response and dump it (make camel case keys).
-    return validator.dump(validator.load(data))
 
 
 def validate_create_new_ship_request(data: dict) -> dict:
@@ -96,20 +87,6 @@ def validate_player_shoot_request(data: dict) -> dict:
     return validator.load(data)
 
 
-def validate_player_shoot_response(data: dict) -> dict:
-    """
-    Method validates response for '/player-shoot' endpoint.
-    Args:
-        data: Response from endpoint.
-
-    Returns:
-        dict: Validated response data from endpoint.
-    """
-    validator = PlayerShootOutputSchema()
-    # Validate response and dump it (make camel case keys).
-    return validator.dump(validator.load(data))
-
-
 def validate_enemy_shoot_request(data: dict) -> dict:
     """
     Method validates request for '/enemy-shoot' endpoint.
@@ -122,20 +99,6 @@ def validate_enemy_shoot_request(data: dict) -> dict:
     validator = EnemyShootInputSchema()
     # Validate request and load it (make snake case keys).
     return validator.load(data)
-
-
-def validate_enemy_shoot_response(data: dict) -> dict:
-    """
-    Method validates response for '/enemy-shoot' endpoint.
-    Args:
-        data: Response from endpoint.
-
-    Returns:
-        dict: Validated response data from endpoint.
-    """
-    validator = EnemyShootOutputSchema()
-    # Validate response and dump it (make camel case keys).
-    return validator.dump(validator.load(data))
 
 
 def validate_game_and_player(player_data: dict, exit_mark: bool = False) -> Game:
