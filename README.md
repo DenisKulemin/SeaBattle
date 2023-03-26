@@ -21,7 +21,7 @@ docker compose -f compose.yaml build
 2) Run docker container:
 
 ```commandline
-docker compose -f compose.yaml run --rm seabattle bash
+docker compose -f compose.yaml run --rm seabattle sh
 ```
 
 3) Run game:

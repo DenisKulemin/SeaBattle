@@ -17,7 +17,7 @@ services:
     volumes:
       - ./../tests/performance_tests/:/mnt/locust
       - ./../tests/configs/:/mnt/locust/configs
-    command: -f /mnt/locust/seabattle_test.py --worker --master-host master
+    command: -f /mnt/locust/seabattle.py --worker --master-host master
     networks:
       - seabattle
 
