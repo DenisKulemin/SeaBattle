@@ -1,9 +1,11 @@
-FROM python:3.11
+FROM python:3.11.2-alpine
 
 WORKDIR /home/seabattle
 
 ENV POETRY_VERSION=1.2.2
 ENV PYTHONPATH ${PYTHONPATH}:$WORKDIR
+
+RUN apk add gcc musl-dev linux-headers
 
 COPY pyproject.toml /home/seabattle
 
